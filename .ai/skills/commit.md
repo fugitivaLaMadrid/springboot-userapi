@@ -7,21 +7,16 @@ When generating commits for this repository:
 
 Format:
 
-type(scope): short description
+`type(scope): short description`
 
 Examples:
 
-feat(api): add UserController GET /users endpoint
-
-feat(model): add User entity with JPA annotations
-
-feat(repository): add UserRepository using Spring Data JPA
-
-feat(service): add UserService business logic layer
-
-chore(docker): add Dockerfile and docker-compose setup
-
-docs(help): update help.md with project structure
+`feat(api): add UserController GET /users endpoint`
+`feat(model): add User entity with JPA annotations`
+`feat(repository): add UserRepository using Spring Data JPA`
+`feat(service): add UserService business logic layer`
+`chore(docker): add Dockerfile and docker-compose setup`
+`docs(help): update help.md with project structure`
 
 Rules:
 
