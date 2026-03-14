@@ -8,6 +8,12 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   userapi:
     build: .
@@ -15,20 +21,21 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: unless-stopped
 
   adminer:
     image: adminer
     container_name: userapi_adminer
-    restart: always
     ports:
-      - 8081:8080
+      - "8081:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   pgdata:
