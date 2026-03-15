@@ -25,11 +25,4 @@ public class User {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
-
-    /** constructor **/
-    public User(String username, String email, LocalDateTime createdAt) {
-        this.username = username;
-        this.email = email;
-        this.createdAt = createdAt;
-    }
 }
