@@ -116,6 +116,19 @@ Example commit messages:
 - `feat(model): add User entity with JPA annotations`
 - `feat(api): implement GET /users endpoint`
 
+## SonarQube Analysis
+Start SonarQube before running the analysis:
+```bash
+docker compose up -d sonarqube
+```
+
+Then run the analysis:
+```bash
+.scripts/sonar.bat
+```
+
+> **Windows users:** run `chmod +x scripts/sonar.sh` in Git Bash before executing for the first time.
+
 ## Notes and tips
 - Keep **secrets out of Git**: use `.env` or your CI secret store.
 - Use the **test profile with H2** for unit and integration tests.
