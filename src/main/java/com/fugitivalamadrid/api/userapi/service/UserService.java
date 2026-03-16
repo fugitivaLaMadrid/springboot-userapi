@@ -1,9 +1,12 @@
 package com.fugitivalamadrid.api.userapi.service;
 
+import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserResponse;
 import com.fugitivalamadrid.api.userapi.model.User;
 import com.fugitivalamadrid.api.userapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,5 +32,28 @@ public class UserService {
                         .createdAt(user.getCreatedAt())
                         .build())
                 .toList();
+    }
+
+    /**
+     * Creates a new user.
+     * @param request the user request
+     * @return the created user
+     */
+    public UserResponse createUser(UserRequest request) {
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        User savedUser = userRepository.save(user);
+
+        return UserResponse.builder()
+                .id(savedUser.getId())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .createdAt(savedUser.getCreatedAt())
+                .build();
     }
 }
