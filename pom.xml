@@ -29,7 +29,6 @@
     <properties>
         <java.version>17</java.version>
     </properties>
-
     <dependencies>
         <!-- Web -->
         <dependency>
@@ -82,7 +81,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -111,7 +109,46 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!--SonarQube-->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.10.0.2594</version>
+            </plugin>
+            <!--JaCoCo-->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
+    <profiles>
+        <!--local profile for sonarqube-->
+        <profile>
+            <id>localProfile</id>
+            <properties>
+                <sonar.host.url>http://localhost:9000</sonar.host.url>
+                <sonar.projectKey>userapi</sonar.projectKey>
+                <sonar.projectName>User API</sonar.projectName>
+                <sonar.coverage.jacoco.xmlReportPaths>
+                    target/site/jacoco/jacoco.xml
+                </sonar.coverage.jacoco.xmlReportPaths>
+            </properties>
+        </profile>
+    </profiles>
 </project>
