@@ -3,7 +3,10 @@ package com.fugitivalamadrid.api.userapi.controller;
 import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserResponse;
 import com.fugitivalamadrid.api.userapi.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -25,13 +28,34 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-        /**
-        * Creates a new user.
-        * @param request the user request
-        * @return the created user
-        */
-        @PostMapping
-        public UserResponse createUser(@RequestBody UserRequest request) {
-            return userService.createUser(request);
-        }
+    /**
+     * Returns a user by id.
+     * @param id the user id
+     * @return the user
+     */
+    @GetMapping("/{id}")
+    public UserResponse getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
+
+    /**
+     * Creates a new user.
+     * @param request the user request
+     * @return the created user
+     */
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponse createUser(@Valid @RequestBody UserRequest request) {
+        return userService.createUser(request);
+    }
+
+    /**
+     * Deletes a user by id.
+     * @param id the user id
+     */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
 }
