@@ -14,6 +14,7 @@ public class GlobalExceptionHandler {
     /**
      * Handle User Not Found Exception
      */
+    @SuppressWarnings("unused")
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
