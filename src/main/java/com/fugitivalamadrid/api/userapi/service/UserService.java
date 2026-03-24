@@ -5,6 +5,8 @@ import com.fugitivalamadrid.api.userapi.dto.UserResponse;
 import com.fugitivalamadrid.api.userapi.exception.UserNotFoundException;
 import com.fugitivalamadrid.api.userapi.model.User;
 import com.fugitivalamadrid.api.userapi.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @Service
 public class UserService {
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
 
@@ -36,8 +39,12 @@ public class UserService {
      * @return the user
      */
     public UserResponse getUserById(Long id) {
+        log.info("Fetching user with id: {}", id);
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(() -> {
+                    log.warn("User not found with id: {}", id);
+                    return new UserNotFoundException(id);
+                });
         return toResponse(user);
     }
 
@@ -62,11 +69,18 @@ public class UserService {
      */
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
+            log.warn("Delete failed - user not found with id: {}", id);
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
+        log.info("User deleted with id: {}", id);
     }
 
+    /**
+     * Converts a User to a UserResponse.
+     * @param user the user
+     * @return the user response
+     */
     private UserResponse toResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
