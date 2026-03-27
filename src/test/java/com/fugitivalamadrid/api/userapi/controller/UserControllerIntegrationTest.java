@@ -170,7 +170,7 @@ class UserControllerIntegrationTest {
     @Test
     void updateUserPartial_returns204_whenSuccessful() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
-        UserRequest request = new UserRequest("alice-updated", "alice@example.com");
+        UserRequest request = new UserRequest("alice", "alice-update@example.com");
 
         mockMvc.perform(patch("/users/{id}", saved.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -180,6 +180,6 @@ class UserControllerIntegrationTest {
         // Verify the user was actually updated
         mockMvc.perform(get("/users/{id}", saved.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email", is("alice@example.com")));
+                .andExpect(jsonPath("$.email", is("alice-update@example.com")));
     }
 }
