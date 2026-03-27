@@ -1,5 +1,6 @@
 package com.fugitivalamadrid.api.userapi.service;
 
+import com.fugitivalamadrid.api.userapi.dto.UserPartialRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserResponse;
 import com.fugitivalamadrid.api.userapi.exception.UserNotFoundException;
@@ -88,5 +89,46 @@ public class UserService {
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())
                 .build();
+    }
+
+    /**
+     * Updates a user by id.
+     * @param id the user id
+     * @param request the user request
+     */
+    public void updateUser(Long id, UserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Update user data failed - user not found with id: {}", id);
+                    return new UserNotFoundException(id);
+                });
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        userRepository.save(user);
+        log.info("User updated with id: {}", id);
+    }
+
+    /**
+     * Partially updates a user by id.
+     * @param id the user id
+     * @param request the user partial request
+     */
+    public void updateUserPartial(Long id, UserPartialRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Update data failed - user not found with id: {}", id);
+                    return new UserNotFoundException(id);
+                });
+
+        // Only update fields that are not null
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+
+        userRepository.save(user);
+        log.info("User partially updated with id: {}", id);
     }
 }

@@ -1,5 +1,6 @@
 package com.fugitivalamadrid.api.userapi.controller;
 
+import com.fugitivalamadrid.api.userapi.dto.UserPartialRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserResponse;
 import com.fugitivalamadrid.api.userapi.service.UserService;
@@ -63,5 +64,29 @@ public class UserController {
     public void deleteUser(@PathVariable Long id) {
         log.info("DELETE /users/{} - deleting user by id", id);
         userService.deleteUser(id);
+    }
+
+    /**
+     * Updates a user by id.
+     * @param id the user id
+     * @param request the user request
+     */
+    @PutMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
+        log.info("PUT /users/{} - updating user with username: {}", id, request.getUsername());
+        userService.updateUser(id, request);
+    }
+
+    /**
+     * Partially updates a user by id.
+     * @param id the user id
+     * @param request the user partial request
+     */
+    @PatchMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateUserPartial(@PathVariable Long id, @Valid @RequestBody UserPartialRequest request) {
+        log.info("PATCH /users/{} - partially updating user", id);
+        userService.updateUserPartial(id, request);
     }
 }

@@ -148,4 +148,38 @@ class UserControllerIntegrationTest {
                 .createdAt(LocalDateTime.now())
                 .build());
     }
+
+    // -- update ------------
+    @Test
+    void updateUser_returns204_whenSuccessful() throws Exception {
+        User saved = createUserInDb("alice", "alice@example.com");
+        UserRequest request = new UserRequest("alice-updated", "alice2@gmail.com");
+
+        mockMvc.perform(put("/users/{id}", saved.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNoContent());
+
+        // Verify the user was actually updated
+        mockMvc.perform(get("/users/{id}", saved.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username", is("alice-updated")))
+                .andExpect(jsonPath("$.email", is("alice2@gmail.com")));
+    }
+
+    @Test
+    void updateUserPartial_returns204_whenSuccessful() throws Exception {
+        User saved = createUserInDb("alice", "alice@example.com");
+        UserRequest request = new UserRequest("alice", "alice-update@example.com");
+
+        mockMvc.perform(patch("/users/{id}", saved.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNoContent());
+
+        // Verify the user was actually updated
+        mockMvc.perform(get("/users/{id}", saved.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email", is("alice-update@example.com")));
+    }
 }
