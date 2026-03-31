@@ -8,6 +8,8 @@ import com.fugitivalamadrid.api.userapi.model.User;
 import com.fugitivalamadrid.api.userapi.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,7 +29,9 @@ public class UserService {
      * Returns a list of all users.
      * @return a list of all users
      */
+    @Cacheable("users")
     public List<UserResponse> getAllUsers() {
+        log.info("Fetching all users from database");
         return userRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -39,6 +43,7 @@ public class UserService {
      * @param id the user id
      * @return the user
      */
+    @Cacheable(value="users", key="#id")
     public UserResponse getUserById(Long id) {
         log.info("Fetching user with id: {}", id);
         User user = userRepository.findById(id)
@@ -54,6 +59,7 @@ public class UserService {
      * @param request the user request
      * @return the created user
      */
+    @CacheEvict(value="users", allEntries=true)
     public UserResponse createUser(UserRequest request) {
         User user = User.builder()
                 .username(request.getUsername())
@@ -68,6 +74,7 @@ public class UserService {
      * Deletes a user by id.
      * @param id the user id
      */
+    @CacheEvict(value="users", allEntries=true)
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             log.warn("Delete failed - user not found with id: {}", id);
@@ -96,6 +103,7 @@ public class UserService {
      * @param id the user id
      * @param request the user request
      */
+    @CacheEvict(value="users", allEntries=true)
     public void updateUser(Long id, UserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
@@ -113,6 +121,7 @@ public class UserService {
      * @param id the user id
      * @param request the user partial request
      */
+    @CacheEvict(value="users", allEntries=true)
     public void updateUserPartial(Long id, UserPartialRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
