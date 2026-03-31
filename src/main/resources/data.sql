@@ -1,4 +1,7 @@
 -- Sample users for development
+--DELETE FROM users;
+TRUNCATE TABLE users RESTART IDENTITY;
+
 INSERT INTO users (username, email, created_at)
 VALUES
     ('alice', 'alice@example.com', NOW()),
