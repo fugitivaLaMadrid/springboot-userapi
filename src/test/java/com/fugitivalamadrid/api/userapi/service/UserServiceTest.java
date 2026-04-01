@@ -30,6 +30,9 @@ import static org.mockito.Mockito.*;
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private AuditLogService auditLogService;
+
     // UserService is the REAL class we are testing
     // Mockito injects the mock UserRepository into it automatically
     @InjectMocks
@@ -135,6 +138,7 @@ import static org.mockito.Mockito.*;
         assertThat(result.getEmail()).isEqualTo("alice@example.com");
         assertThat(result.getCreatedAt()).isNotNull();
 
+        verify(auditLogService).logCreated(anyString());
         // Verify save was called exactly once
         verify(userRepository, times(1)).save(any(User.class));
     }
