@@ -89,4 +89,19 @@ public class UserController {
         log.info("PATCH /users/{} - partially updating user", id);
         userService.updateUserPartial(id, request);
     }
+
+    /**
+     * Searches users by username with optional sorting.
+     * @param name the username to search for
+     * @param sortBy field to sort by (default: username)
+     * @param direction sort direction asc or desc (default: asc)
+     * @return list of matching users
+     */
+    @GetMapping("/search")
+    public List<UserResponse> searchUsers(
+            @RequestParam String name,
+            @RequestParam(defaultValue = "username") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+        return userService.searchUsers(name, sortBy, direction);
+    }
 }
