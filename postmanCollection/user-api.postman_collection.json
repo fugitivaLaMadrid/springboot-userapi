@@ -26,13 +26,16 @@
       "response": []
     },
     {
-      "name": "CreateNewUser",
+      "name": "searchByName",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
       "request": {
-        "method": "POST",
+        "method": "GET",
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"username\": \"Victoria\",\r\n    \"email\" : \"victoria@gmail.com\"\r\n}",
+          "raw": "",
           "options": {
             "raw": {
               "language": "json"
@@ -40,14 +43,21 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8080/users",
+          "raw": "http://localhost:8080/users/search?name=alice",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8080",
           "path": [
-            "users"
+            "users",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "alice"
+            }
           ]
         }
       },
@@ -92,6 +102,132 @@
           "path": [
             "users",
             "3"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "UpdateEntireJson",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"Victoria, Hilda\",\r\n    \"email\" : \"victoriaHilda@gmail.com\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/users/4",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "users",
+            "4"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "patch_update",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\" : \"victoria@gmail.com\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/users/4",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "users",
+            "4"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search_with_sorting_by_email_desc",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/users/search?name=alice&sortBy=email&direction=desc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "users",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "alice"
+            },
+            {
+              "key": "sortBy",
+              "value": "email"
+            },
+            {
+              "key": "direction",
+              "value": "desc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search_all_users_sorted_by_username_ascending",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/users/search?name=a&sortBy=username&direction=asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "users",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "a"
+            },
+            {
+              "key": "sortBy",
+              "value": "username"
+            },
+            {
+              "key": "direction",
+              "value": "asc"
+            }
           ]
         }
       },

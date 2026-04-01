@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -139,5 +140,26 @@ public class UserService {
 
         userRepository.save(user);
         log.info("User partially updated with id: {}", id);
+    }
+
+    /**
+     * Searches users by username with optional sorting.
+     * @param name the username to search for
+     * @param sortBy field to sort by (username or email)
+     * @param direction asc or desc
+     * @return list of matching users
+     */
+    public List<UserResponse> searchUsers(String name, String sortBy, String direction) {
+        log.info("Searching users with name: {}, sortBy: {}, direction: {}", name, sortBy, direction);
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return userRepository.findAll(sort)
+                .stream()
+                .filter(user -> user.getUsername().toLowerCase().contains(name.toLowerCase()))
+                .map(this::toResponse)
+                .toList();
     }
 }

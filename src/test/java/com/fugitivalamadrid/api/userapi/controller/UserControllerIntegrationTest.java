@@ -4,6 +4,7 @@ import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.model.User;
 import com.fugitivalamadrid.api.userapi.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,6 +44,7 @@ class UserControllerIntegrationTest {
     // ── GET /users ────────────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("GET /users returns empty list when no users exist")
     void getAllUsers_returnsEmptyList_whenNoUsers() throws Exception {
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
@@ -50,6 +52,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("GET /users returns list when users exist")
     void getAllUsers_returnsList_whenUsersExist() throws Exception {
         createUserInDb("alice", "alice@example.com");
         createUserInDb("bob", "bob@example.com");
@@ -64,6 +67,7 @@ class UserControllerIntegrationTest {
     // ── GET /users/{id} ───────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("GET /users/{id} returns user when exists")
     void getUserById_returnsUser_whenExists() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
 
@@ -75,6 +79,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("GET /users/{id} returns 404 when user not found")
     void getUserById_returns404_whenNotFound() throws Exception {
         mockMvc.perform(get("/users/{id}", 999L))
                 .andExpect(status().isNotFound())
@@ -85,6 +90,7 @@ class UserControllerIntegrationTest {
     // ── POST /users ───────────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("POST /users creates user and returns created user")
     void createUser_returnsCreatedUser() throws Exception {
         UserRequest request = new UserRequest("alice", "alice@example.com");
 
@@ -99,6 +105,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /users returns 400 when username is blank")
     void createUser_returns400_whenUsernameBlank() throws Exception {
         UserRequest request = new UserRequest("", "alice@example.com");
 
@@ -109,6 +116,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /users returns 400 when email is invalid")
     void createUser_returns400_whenEmailInvalid() throws Exception {
         UserRequest request = new UserRequest("alice", "not-an-email");
 
@@ -121,6 +129,7 @@ class UserControllerIntegrationTest {
     // ── DELETE /users/{id} ────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("DELETE /users/{id} returns 204 when user exists and is deleted")
     void deleteUser_returns204_whenExists() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
 
@@ -132,6 +141,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("DELETE /users/{id} returns 404 when user not found")
     void deleteUser_returns404_whenNotFound() throws Exception {
         mockMvc.perform(delete("/users/{id}", 999L))
                 .andExpect(status().isNotFound())
@@ -151,6 +161,7 @@ class UserControllerIntegrationTest {
 
     // -- update ------------
     @Test
+    @DisplayName("PUT /users/{id} returns 204 when user is successfully updated")
     void updateUser_returns204_whenSuccessful() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
         UserRequest request = new UserRequest("alice-updated", "alice2@gmail.com");
@@ -168,6 +179,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("PATCH /users/{id} returns 204 when user is successfully updated")
     void updateUserPartial_returns204_whenSuccessful() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
         UserRequest request = new UserRequest("alice", "alice-update@example.com");
@@ -181,5 +193,47 @@ class UserControllerIntegrationTest {
         mockMvc.perform(get("/users/{id}", saved.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", is("alice-update@example.com")));
+    }
+
+    // ── GET /users/search ─────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("GET /users/search returns matching users when name matches")
+    void searchUsers_returnsMatchingUsers() throws Exception {
+        createUserInDb("alice", "alice@example.com");
+        createUserInDb("bob", "bob@example.com");
+
+        mockMvc.perform(get("/users/search")
+                        .param("name", "alice"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].username", is("alice")));
+    }
+
+    @Test
+    @DisplayName("GET /users/search returns empty list when no name matches")
+    void searchUsers_returnsEmpty_whenNoMatch() throws Exception {
+        createUserInDb("alice", "alice@example.com");
+
+        mockMvc.perform(get("/users/search")
+                        .param("name", "xyz"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("GET /users/search returns sorted results when sortBy and direction provided")
+    void searchUsers_returnsSortedResults() throws Exception {
+        createUserInDb("alice", "alice@example.com");
+        createUserInDb("anna", "anna@example.com");
+
+        mockMvc.perform(get("/users/search")
+                        .param("name", "a")
+                        .param("sortBy", "username")
+                        .param("direction", "asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].username", is("alice")))
+                .andExpect(jsonPath("$[1].username", is("anna")));
     }
 }
