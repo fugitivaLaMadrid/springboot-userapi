@@ -138,6 +138,7 @@ import static org.mockito.Mockito.*;
         assertThat(result.getEmail()).isEqualTo("alice@example.com");
         assertThat(result.getCreatedAt()).isNotNull();
 
+        verify(auditLogService).logCreated(anyString());
         // Verify save was called exactly once
         verify(userRepository, times(1)).save(any(User.class));
     }
