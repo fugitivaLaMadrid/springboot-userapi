@@ -30,6 +30,9 @@ import static org.mockito.Mockito.*;
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private AuditLogService auditLogService;
+
     // UserService is the REAL class we are testing
     // Mockito injects the mock UserRepository into it automatically
     @InjectMocks

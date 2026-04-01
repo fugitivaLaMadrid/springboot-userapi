@@ -21,9 +21,11 @@ public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, AuditLogService auditLogService) {
         this.userRepository = userRepository;
+        this.auditLogService = auditLogService;
     }
 
     /**
@@ -60,15 +62,17 @@ public class UserService {
      * @param request the user request
      * @return the created user
      */
-    @CacheEvict(value="users", allEntries=true)
+    @CacheEvict(value = "users", allEntries = true)
     public UserResponse createUser(UserRequest request) {
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .createdAt(LocalDateTime.now())
                 .build();
-
-        return toResponse(userRepository.save(user));
+        UserResponse response = toResponse(userRepository.save(user));
+        auditLogService.logCreated(request.getUsername());
+        log.info("User created with id: {}", response.getId());
+        return response;
     }
 
     /**
@@ -83,6 +87,7 @@ public class UserService {
         }
         userRepository.deleteById(id);
         log.info("User deleted with id: {}", id);
+        auditLogService.logDeleted(id);
     }
 
     /**
@@ -104,17 +109,18 @@ public class UserService {
      * @param id the user id
      * @param request the user request
      */
-    @CacheEvict(value="users", allEntries=true)
+    @CacheEvict(value = "users", allEntries = true)
     public void updateUser(Long id, UserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("Update user data failed - user not found with id: {}", id);
+                    log.warn("Update failed - user not found with id: {}", id);
                     return new UserNotFoundException(id);
                 });
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         userRepository.save(user);
         log.info("User updated with id: {}", id);
+        auditLogService.logUpdated(id, request.getUsername());
     }
 
     /**
@@ -137,8 +143,8 @@ public class UserService {
         if (request.getEmail() != null) {
             user.setEmail(request.getEmail());
         }
-
         userRepository.save(user);
+        auditLogService.logPartialUpdated(id);
         log.info("User partially updated with id: {}", id);
     }
 
