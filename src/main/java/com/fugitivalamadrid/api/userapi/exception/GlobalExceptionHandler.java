@@ -30,6 +30,7 @@ public class GlobalExceptionHandler {
     /**
      * Handle Rate Limit Exception
      */
+    @SuppressWarnings("unused")
     @ExceptionHandler(RateLimitException.class)
     public ResponseEntity<Map<String, Object>> handleRateLimit(RateLimitException ex) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of(

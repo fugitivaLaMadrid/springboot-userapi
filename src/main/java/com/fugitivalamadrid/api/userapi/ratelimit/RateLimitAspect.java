@@ -33,6 +33,7 @@ public class RateLimitAspect {
      * @return the result of the method invocation
      * @throws Throwable if method invocation fails or rate limit is exceeded
      */
+    @SuppressWarnings("unused")
     @Around("@annotation(rateLimit)")
     public Object rateLimit(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable {
         String key = generateKey(joinPoint, rateLimit);

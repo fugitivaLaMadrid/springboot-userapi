@@ -1,5 +1,6 @@
 package com.fugitivalamadrid.api.userapi.ratelimit;
 
+import lombok.Getter;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -7,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Simple rate limiter using AtomicInteger and synchronized to simulate production constraints.
  * Uses a sliding window approach with atomic operations for thread safety.
  */
+@Getter
 public class RateLimiter {
     private final int maxRequests;
     private final long windowSizeMillis;
@@ -71,24 +73,6 @@ public class RateLimiter {
      */
     public int getCurrentRequestCount() {
         return requestCount.get();
-    }
-
-    /**
-     * Gets the maximum allowed requests per window.
-     *
-     * @return maximum requests
-     */
-    public int getMaxRequests() {
-        return maxRequests;
-    }
-
-    /**
-     * Gets the window size in milliseconds.
-     *
-     * @return window size in milliseconds
-     */
-    public long getWindowSizeMillis() {
-        return windowSizeMillis;
     }
 
     /**

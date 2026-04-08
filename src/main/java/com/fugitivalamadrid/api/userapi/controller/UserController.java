@@ -27,7 +27,7 @@ public class UserController {
      * Returns a list of all users.
      * @return a list of all users
      */
-    @RateLimit(maxRequests = 10, windowSizeMillis = 60000)
+    @RateLimit
     @GetMapping
     public List<UserResponse> getAllUsers() {
         log.info("GET /users - fetching all users");
@@ -50,7 +50,7 @@ public class UserController {
      * @param request the user request
      * @return the created user
      */
-    @RateLimit(maxRequests = 5, windowSizeMillis = 60000)
+    @RateLimit(maxRequests = 5, windowSizeMillis = 80000)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse createUser(@Valid @RequestBody UserRequest request) {
