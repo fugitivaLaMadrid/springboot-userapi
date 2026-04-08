@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import com.fugitivalamadrid.api.userapi.ratelimit.RateLimit;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class UserController {
      * Returns a list of all users.
      * @return a list of all users
      */
+    @RateLimit
     @GetMapping
     public List<UserResponse> getAllUsers() {
         log.info("GET /users - fetching all users");
@@ -48,6 +50,7 @@ public class UserController {
      * @param request the user request
      * @return the created user
      */
+    @RateLimit(maxRequests = 5, windowSizeMillis = 80000)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse createUser(@Valid @RequestBody UserRequest request) {

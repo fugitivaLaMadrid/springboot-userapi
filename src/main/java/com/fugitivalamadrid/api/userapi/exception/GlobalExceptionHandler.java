@@ -10,6 +10,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    
+    private static final String TIMESTAMP = LocalDateTime.now().toString();
 
     /**
      * Handle User Not Found Exception
@@ -18,10 +20,27 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                "timestamp", LocalDateTime.now().toString(),
+                "timestamp", TIMESTAMP,
                 "status", 404,
                 "error", "Not Found",
                 "message", ex.getMessage()
+        ));
+    }
+
+    /**
+     * Handle Rate Limit Exception
+     */
+    @SuppressWarnings("unused")
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<Map<String, Object>> handleRateLimit(RateLimitException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of(
+                "timestamp", TIMESTAMP,
+                "status", 429,
+                "error", "Too Many Requests",
+                "message", ex.getMessage(),
+                "maxRequests", ex.getMaxRequests(),
+                "windowSizeMillis", ex.getWindowSizeMillis(),
+                "timeUntilReset", ex.getTimeUntilReset()
         ));
     }
 }
