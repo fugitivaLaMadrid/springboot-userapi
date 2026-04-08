@@ -25,7 +25,7 @@ public class ExampleRateLimitedController {
      * Endpoint with moderate rate limiting - 10 requests per minute.
      */
     @GetMapping("/public-data")
-    @RateLimit(maxRequests = 10, windowSizeMillis = 60000)
+    @RateLimit
     public ResponseEntity<Map<String, Object>> getPublicData() {
         log.info("Accessing public data endpoint");
         Map<String, Object> response = new HashMap<>();
@@ -38,7 +38,7 @@ public class ExampleRateLimitedController {
      * Endpoint with strict rate limiting - 5 requests per minute.
      */
     @PostMapping("/expensive-operation")
-    @RateLimit(maxRequests = 5, windowSizeMillis = 60000)
+    @RateLimit
     public ResponseEntity<Map<String, Object>> performExpensiveOperation(@RequestBody Map<String, Object> request) {
         log.info("Performing expensive operation");
         Map<String, Object> response = new HashMap<>();
@@ -52,7 +52,7 @@ public class ExampleRateLimitedController {
      * Endpoint with very strict rate limiting - 2 requests per minute.
      */
     @GetMapping("/premium-data")
-    @RateLimit(maxRequests = 2, windowSizeMillis = 60000)
+    @RateLimit
     public ResponseEntity<Map<String, Object>> getPremiumData() {
         log.info("Accessing premium data endpoint");
         Map<String, Object> response = new HashMap<>();
@@ -66,7 +66,7 @@ public class ExampleRateLimitedController {
      * Endpoint with custom rate limit key - separate from other endpoints.
      */
     @GetMapping("/custom-key")
-    @RateLimit(maxRequests = 15, windowSizeMillis = 60000, key = "custom-endpoint")
+    @RateLimit
     public ResponseEntity<Map<String, Object>> getCustomKeyData() {
         log.info("Accessing custom key endpoint");
         Map<String, Object> response = new HashMap<>();

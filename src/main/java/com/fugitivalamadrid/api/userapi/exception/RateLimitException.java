@@ -1,10 +1,13 @@
 package com.fugitivalamadrid.api.userapi.exception;
 
+import lombok.Getter;
+
 /**
  * Exception thrown when rate limit is exceeded.
  * This exception is used to indicate that a request has been rejected
  * due to exceeding the configured rate limit constraints.
  */
+@Getter
 public class RateLimitException extends RuntimeException {
     
     private final int maxRequests;
@@ -24,32 +27,5 @@ public class RateLimitException extends RuntimeException {
         this.maxRequests = maxRequests;
         this.windowSizeMillis = windowSizeMillis;
         this.timeUntilReset = timeUntilReset;
-    }
-    
-    /**
-     * Gets the maximum number of requests allowed per window.
-     *
-     * @return maximum requests
-     */
-    public int getMaxRequests() {
-        return maxRequests;
-    }
-    
-    /**
-     * Gets the window size in milliseconds.
-     *
-     * @return window size in milliseconds
-     */
-    public long getWindowSizeMillis() {
-        return windowSizeMillis;
-    }
-    
-    /**
-     * Gets the time until the rate limit window resets.
-     *
-     * @return time until reset in milliseconds
-     */
-    public long getTimeUntilReset() {
-        return timeUntilReset;
     }
 }
