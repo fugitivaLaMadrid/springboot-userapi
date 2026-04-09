@@ -982,6 +982,325 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "error-handle",
+      "item": [
+        {
+          "name": "Wrong-type-in-path",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Wrong-type-in-path returns 400-level validation error', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([",
+                  "        400,",
+                  "        404",
+                  "    ]);",
+                  "})",
+                  "",
+                  "pm.test('Wrong-type-in-path response indicates invalid path parameter', function () {",
+                  "    const text = pm.response.text();",
+                  "    let body = {};",
+                  "    try {",
+                  "        body = pm.response.json();",
+                  "    } catch (e) {",
+                  "    }",
+                  "    const candidates = [",
+                  "        body.error,",
+                  "        body.message,",
+                  "        body.title,",
+                  "        body.detail,",
+                  "        body.error_description,",
+                  "        text",
+                  "    ].filter(function (value) {",
+                  "        return typeof value === 'string' && value.trim().length > 0;",
+                  "    }).map(function (value) {",
+                  "        return value.toLowerCase();",
+                  "    });",
+                  "    const keywords = [",
+                  "        'type mismatch',",
+                  "        'invalid',",
+                  "        'number format',",
+                  "        'failed to convert',",
+                  "        'method argument type mismatch',",
+                  "        'bad request',",
+                  "        'abc',",
+                  "        'user',",
+                  "        'path'",
+                  "    ];",
+                  "    const matched = candidates.some(function (candidate) {",
+                  "        return keywords.some(function (keyword) {",
+                  "            return candidate.includes(keyword);",
+                  "        });",
+                  "    });",
+                  "    pm.expect(matched, 'Expected error details to mention an invalid path/id type').to.be.true;",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users/abc",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "abc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Wrong-endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Wrong-endpoint returns not found status', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "})",
+                  "",
+                  "pm.test('Wrong-endpoint response indicates missing route/resource', function () {",
+                  "    const text = pm.response.text();",
+                  "    let body = {};",
+                  "    try {",
+                  "        body = pm.response.json();",
+                  "    } catch (e) {",
+                  "    }",
+                  "    const candidates = [",
+                  "        body.error,",
+                  "        body.message,",
+                  "        body.title,",
+                  "        body.detail,",
+                  "        body.path,",
+                  "        text",
+                  "    ].filter(function (value) {",
+                  "        return typeof value === 'string' && value.trim().length > 0;",
+                  "    }).map(function (value) {",
+                  "        return value.toLowerCase();",
+                  "    });",
+                  "    const keywords = [",
+                  "        'not found',",
+                  "        'no message available',",
+                  "        'no static resource',",
+                  "        'no handler found',",
+                  "        'wrongpath',",
+                  "        '404'",
+                  "    ];",
+                  "    const matched = candidates.some(function (candidate) {",
+                  "        return keywords.some(function (keyword) {",
+                  "            return candidate.includes(keyword);",
+                  "        });",
+                  "    });",
+                  "    pm.expect(matched, 'Expected error details to indicate the endpoint was not found').to.be.true;",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/wrongpath",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "wrongpath"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Wrong-method",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Wrong-method returns method not allowed status', function () {",
+                  "    pm.response.to.have.status(405);",
+                  "})",
+                  "",
+                  "pm.test('Wrong-method response indicates unsupported HTTP method', function () {",
+                  "    const text = pm.response.text();",
+                  "    let body = {};",
+                  "    try {",
+                  "        body = pm.response.json();",
+                  "    } catch (e) {",
+                  "    }",
+                  "    const candidates = [",
+                  "        body.error,",
+                  "        body.message,",
+                  "        body.title,",
+                  "        body.detail,",
+                  "        text",
+                  "    ].filter(function (value) {",
+                  "        return typeof value === 'string' && value.trim().length > 0;",
+                  "    }).map(function (value) {",
+                  "        return value.toLowerCase();",
+                  "    });",
+                  "    const keywords = [",
+                  "        'method not allowed',",
+                  "        'request method',",
+                  "        'not supported',",
+                  "        'post',",
+                  "        '405'",
+                  "    ];",
+                  "    const matched = candidates.some(function (candidate) {",
+                  "        return keywords.some(function (keyword) {",
+                  "            return candidate.includes(keyword);",
+                  "        });",
+                  "    });",
+                  "    pm.expect(matched, 'Expected error details to indicate the HTTP method is not allowed').to.be.true;",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Malformed-JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Malformed-JSON returns bad request status', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([",
+                  "        400,",
+                  "        415",
+                  "    ]);",
+                  "})",
+                  "",
+                  "pm.test('Malformed-JSON response indicates invalid request body', function () {",
+                  "    const text = pm.response.text();",
+                  "    let body = {};",
+                  "    try {",
+                  "        body = pm.response.json();",
+                  "    } catch (e) {",
+                  "    }",
+                  "    const candidates = [",
+                  "        body.error,",
+                  "        body.message,",
+                  "        body.title,",
+                  "        body.detail,",
+                  "        body.errors,",
+                  "        text",
+                  "    ].map(function (value) {",
+                  "        if (Array.isArray(value)) {",
+                  "            return value.join(' ');",
+                  "        }",
+                  "        return value;",
+                  "    }).filter(function (value) {",
+                  "        return typeof value === 'string' && value.trim().length > 0;",
+                  "    }).map(function (value) {",
+                  "        return value.toLowerCase();",
+                  "    });",
+                  "    const keywords = [",
+                  "        'malformed',",
+                  "        'json parse',",
+                  "        'parse error',",
+                  "        'bad request',",
+                  "        'unexpected character',",
+                  "        'syntax error',",
+                  "        'message not readable',",
+                  "        'invalid'",
+                  "    ];",
+                  "    const matched = candidates.some(function (candidate) {",
+                  "        return keywords.some(function (keyword) {",
+                  "            return candidate.includes(keyword);",
+                  "        });",
+                  "    });",
+                  "    pm.expect(matched, 'Expected error details to indicate malformed JSON').to.be.true;",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ bad json }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
