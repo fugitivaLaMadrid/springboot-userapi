@@ -236,4 +236,91 @@ class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].username", is("alice")))
                 .andExpect(jsonPath("$[1].username", is("anna")));
     }
+
+    // ── EDGE CASES ────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("POST /users returns 409 when email already exists")
+    void createUser_returns409_whenDuplicateEmail() throws Exception {
+        UserRequest request = new UserRequest("alice", "alice@example.com");
+
+        // First creation succeeds
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        // Second creation with same email fails
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", is(409)))
+                .andExpect(jsonPath("$.message", containsString("already exists")));
+    }
+
+    @Test
+    @DisplayName("POST /users returns 409 when username already exists")
+    void createUser_returns409_whenDuplicateUsername() throws Exception {
+        // First user
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new UserRequest("alice", "alice@example.com"))))
+                .andExpect(status().isCreated());
+
+        // Same username different email
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new UserRequest("alice", "alice2@example.com"))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", is(409)));
+    }
+
+    @Test
+    @DisplayName("GET /users returns empty list when database is empty")
+    void getAllUsers_returnsEmptyList_whenDatabaseIsEmpty() throws Exception {
+        // Database is already empty from @BeforeEach deleteAll()
+        mockMvc.perform(get("/users"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("GET /users/search returns empty list when database is empty")
+    void searchUsers_returnsEmptyList_whenDatabaseIsEmpty() throws Exception {
+        mockMvc.perform(get("/users/search")
+                        .param("name", "alice"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("GET /users/{id} returns 404 when database is empty")
+    void getUserById_returns404_whenDatabaseIsEmpty() throws Exception {
+        mockMvc.perform(get("/users/{id}", 1L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is(404)));
+    }
+
+    @Test
+    @DisplayName("DELETE /users/{id} returns 404 when database is empty")
+    void deleteUser_returns404_whenDatabaseIsEmpty() throws Exception {
+        mockMvc.perform(delete("/users/{id}", 1L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is(404)));
+    }
+
+    @Test
+    @DisplayName("PUT /users/{id} returns 404 when database is empty")
+    void updateUser_returns404_whenDatabaseIsEmpty() throws Exception {
+        UserRequest request = new UserRequest("alice", "alice@example.com");
+
+        mockMvc.perform(put("/users/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is(404)));
+    }
 }

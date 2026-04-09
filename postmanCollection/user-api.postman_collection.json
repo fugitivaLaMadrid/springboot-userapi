@@ -232,7 +232,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"Victoria\",\r\n    \"email\" : \"victoria@gmail.com\"\r\n}"
+              "raw": ""
             },
             "url": {
               "raw": "http://localhost:8080/users/{{deleteUserId}}",
