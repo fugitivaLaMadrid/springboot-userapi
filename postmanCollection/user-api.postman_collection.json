@@ -200,6 +200,31 @@
                 "packages": {},
                 "requests": {}
               }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.sendRequest({\r",
+                  "    url: 'http://localhost:8080/users',\r",
+                  "    method: 'POST',\r",
+                  "    header: { 'Content-Type': 'application/json' },\r",
+                  "    body: {\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify({\r",
+                  "            username: 'delete_test_' + Date.now(),\r",
+                  "            email: 'delete_' + Date.now() + '@gmail.com'\r",
+                  "        })\r",
+                  "    }\r",
+                  "}, function (err, res) {\r",
+                  "    const json = res.json();\r",
+                  "    pm.variables.set('deleteUserId', json.id);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
             }
           ],
           "request": {
@@ -210,7 +235,7 @@
               "raw": "{\r\n    \"username\": \"Victoria\",\r\n    \"email\" : \"victoria@gmail.com\"\r\n}"
             },
             "url": {
-              "raw": "http://localhost:8080/users/10",
+              "raw": "http://localhost:8080/users/{{deleteUserId}}",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -218,7 +243,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "10"
+                "{{deleteUserId}}"
               ]
             }
           },
@@ -449,6 +474,18 @@
                 "packages": {},
                 "requests": {}
               }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.set(\"uniqueEmail\", \"victoria_\" + Date.now() + \"@gmail.com\");\r",
+                  "pm.variables.set(\"uniqueUsername\", \"victoria_\" + Date.now());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
             }
           ],
           "request": {
@@ -456,7 +493,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"Victoria\",\r\n    \"email\": \"victori@gmail.com\"\r\n}",
+              "raw": "{\r\n    \"username\": \"{{uniqueUsername}}\",\r\n    \"email\": \"{{uniqueEmail}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
