@@ -7,32 +7,24 @@ This document explains the project layout, prerequisites, common commands, and h
 
 ## Project structure
 ```
-.ai/
-├─ README.md
-└─ skills/
-     └─ commit.md
-
 src/
 ├─ main/
-│ ├─ java/
-│ │ └─ com/
-│ │ └─ fugitivalamadrid/
-│ │ └─ api/
-│ │ └─ userapi/
-│ │ ├─ controller/     # REST controllers
-│ │ ├─ service/        # Business logic
-│ │ ├─ repository/     # Database access
-│ │ ├─ dto/            # Request and Response DTOs
-│ │ └─ model/          # Entities
-│ └─ resources/
-│ ├─ application.yml          # Prod / PostgreSQL config
-│ └─ application-test.yml     # Test (H2) config
+│  ├─ java/
+│  │  └─ com/fugitivalamadrid/api/userapi/   # App packages
+│  │     ├─ controller/                       # REST controllers
+│  │     ├─ service/                          # Business logic
+│  │     ├─ repository/                       # Database access
+│  │     ├─ model/                            # Entities
+│  │     ├─ dto/                              # Request and Response DTOs
+│  │     ├─ exception/                        # Custom exceptions
+│  │     ├─ mapper/                           # Object mappers
+│  │     └─ ratelimit/                        # Rate limiting logic
+│  └─ resources/
+│     ├─ application.yml                      # Prod config
+│     └─ application-test.yml                 # Test config (H2)
 └─ test/
-└─ java/
-└─ com/
-└─ fugitivalamadrid/
-└─ api/
-└─ userapi/           # Test classes
+  └─ java/
+    └─ com/fugitivalamadrid/api/userapi/     # Test classes
 ```
 
 ### Important Files

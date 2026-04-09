@@ -11,6 +11,35 @@
       "item": [
         {
           "name": "searchByName",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "",
+                  "if (contentType.toLowerCase().includes(\"application/json\")) {",
+                  "    pm.test(\"Response body parses as JSON\", function () {",
+                  "        pm.expect(function () {",
+                  "            pm.response.json();",
+                  "        }).to.not.throw();",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
@@ -49,6 +78,30 @@
         },
         {
           "name": "getAllUsers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is under 2000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\") || \"\";\r",
+                  "    pm.expect(contentType).to.include(\"application/json\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -68,6 +121,35 @@
         },
         {
           "name": "GetUserById",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is under 2000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "});\r",
+                  "\r",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";\r",
+                  "\r",
+                  "if (contentType.toLowerCase().includes(\"application/json\")) {\r",
+                  "    pm.test(\"Response body parses as JSON\", function () {\r",
+                  "        pm.expect(function () {\r",
+                  "            pm.response.json();\r",
+                  "        }).to.not.throw();\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -88,6 +170,38 @@
         },
         {
           "name": "DeteleUserById",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is valid for delete operation', function () {",
+                  "    pm.expect([200, 202, 204]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('Response body parses as JSON when present and content type is JSON', function () {",
+                  "    const contentType = pm.response.headers.get('Content-Type') || '';",
+                  "    const responseText = pm.response.text();",
+                  "",
+                  "    if (responseText && contentType.toLowerCase().includes('application/json')) {",
+                  "        pm.expect(function () {",
+                  "            JSON.parse(responseText);",
+                  "        }).to.not.throw();",
+                  "    } else {",
+                  "        pm.expect(true).to.be.true;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [],
@@ -96,7 +210,7 @@
               "raw": "{\r\n    \"username\": \"Victoria\",\r\n    \"email\" : \"victoria@gmail.com\"\r\n}"
             },
             "url": {
-              "raw": "http://localhost:8080/users/3",
+              "raw": "http://localhost:8080/users/10",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -104,7 +218,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "3"
+                "10"
               ]
             }
           },
@@ -112,6 +226,31 @@
         },
         {
           "name": "Search_with_sorting_by_email_desc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "if (pm.response.text() && pm.response.text().trim().length > 0) {",
+                  "    pm.test(\"Response body is valid JSON when present\", function () {",
+                  "        pm.expect(function () {",
+                  "            JSON.parse(pm.response.text());",
+                  "        }).to.not.throw();",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -146,12 +285,39 @@
         },
         {
           "name": "patch_update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 204\", function () {",
+                  "    pm.expect([200, 204]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 3000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});",
+                  "",
+                  "if (pm.response.text() && pm.response.text().trim().length > 0) {",
+                  "    pm.test(\"Response body is valid JSON when present\", function () {",
+                  "        pm.expect(function () {",
+                  "            JSON.parse(pm.response.text());",
+                  "        }).to.not.throw();",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\" : \"victoria@gmail.com\"\r\n}",
+              "raw": "{\r\n    \"email\" : \"alice-victoria@gmail.com\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -159,7 +325,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/4",
+              "raw": "http://localhost:8080/users/1",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -167,7 +333,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "4"
+                "1"
               ]
             }
           },
@@ -175,12 +341,50 @@
         },
         {
           "name": "UpdateEntireJson",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has content when applicable\", function () {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.expect(pm.response.text()).to.not.be.undefined;",
+                  "    }",
+                  "});",
+                  "",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "if (contentType.includes(\"application/json\") && pm.response.text()) {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response body is valid JSON\", function () {",
+                  "        pm.expect(jsonData).to.not.be.undefined;",
+                  "    });",
+                  "",
+                  "    pm.test(\"JSON response is an object or array\", function () {",
+                  "        pm.expect(Array.isArray(jsonData) || typeof jsonData === \"object\").to.be.true;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"Victoria, Hilda\",\r\n    \"email\" : \"victoriaHilda@gmail.com\"\r\n}",
+              "raw": "{\r\n    \"username\": \"Bob, Paco\",\r\n    \"email\" : \"bobPaco@gmail.com\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -188,7 +392,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/4",
+              "raw": "http://localhost:8080/users/2",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -196,7 +400,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "4"
+                "2"
               ]
             }
           },
@@ -204,12 +408,55 @@
         },
         {
           "name": "createUser",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is success for create', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Response is JSON when body is present', function () {",
+                  "    if (pm.response.text()) {",
+                  "        pm.response.to.be.json;",
+                  "    }",
+                  "});",
+                  "",
+                  "if (pm.response.text()) {",
+                  "    const json = pm.response.json();",
+                  "",
+                  "    pm.test('Created resource data or identifier is present when evident', function () {",
+                  "        const hasIdentifier = json && (",
+                  "            json.id !== undefined ||",
+                  "            json.userId !== undefined ||",
+                  "            json.uuid !== undefined ||",
+                  "            json.identifier !== undefined",
+                  "        );",
+                  "",
+                  "        const hasCreatedData = json && (",
+                  "            json.username !== undefined ||",
+                  "            json.email !== undefined ||",
+                  "            json.data !== undefined ||",
+                  "            json.user !== undefined",
+                  "        );",
+                  "",
+                  "        pm.expect(hasIdentifier || hasCreatedData).to.equal(true);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"Victoria5\",\r\n    \"email\": \"victori5@gmail.com\"\r\n}",
+              "raw": "{\r\n    \"username\": \"Victoria\",\r\n    \"email\": \"victori@gmail.com\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -232,6 +479,56 @@
         },
         {
           "name": "Search_all_users_sorted_by_username_ascending",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is JSON when body is present', function () {",
+                  "    if (pm.response.text()) {",
+                  "        pm.response.to.be.json;",
+                  "    }",
+                  "});",
+                  "",
+                  "if (pm.response.text()) {",
+                  "    const json = pm.response.json();",
+                  "    const users = Array.isArray(json)",
+                  "        ? json",
+                  "        : Array.isArray(json.users)",
+                  "            ? json.users",
+                  "            : Array.isArray(json.data)",
+                  "                ? json.data",
+                  "                : null;",
+                  "",
+                  "    pm.test('Response contains a user list when provided as list data', function () {",
+                  "        pm.expect(users, 'Expected top-level array or users/data array').to.not.equal(null);",
+                  "    });",
+                  "",
+                  "    if (users) {",
+                  "        const usernames = users",
+                  "            .map(item => item && item.username)",
+                  "            .filter(username => typeof username === 'string');",
+                  "",
+                  "        if (usernames.length > 0) {",
+                  "            pm.test('Usernames are sorted ascending', function () {",
+                  "                const normalized = usernames.map(name => name.toLowerCase());",
+                  "                const sorted = [...normalized].sort((a, b) => a.localeCompare(b));",
+                  "                pm.expect(normalized).to.eql(sorted);",
+                  "            });",
+                  "        }",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -271,6 +568,42 @@
       "item": [
         {
           "name": "public-data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has content when applicable\", function () {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.expect(pm.response.text()).to.not.be.undefined;",
+                  "    }",
+                  "});",
+                  "",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "if (contentType.includes(\"application/json\") && pm.response.text()) {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response body is valid JSON\", function () {",
+                  "        pm.expect(jsonData).to.not.be.undefined;",
+                  "    });",
+                  "",
+                  "    pm.test(\"JSON response is an object or array\", function () {",
+                  "        pm.expect(Array.isArray(jsonData) || typeof jsonData === \"object\").to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "noauth"
@@ -295,6 +628,42 @@
         },
         {
           "name": "premium-data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has content when applicable\", function () {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.expect(pm.response.text()).to.not.be.undefined;",
+                  "    }",
+                  "});",
+                  "",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "if (contentType.includes(\"application/json\") && pm.response.text()) {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response body is valid JSON\", function () {",
+                  "        pm.expect(jsonData).to.not.be.undefined;",
+                  "    });",
+                  "",
+                  "    pm.test(\"JSON response is an object or array\", function () {",
+                  "        pm.expect(Array.isArray(jsonData) || typeof jsonData === \"object\").to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "noauth"
@@ -319,6 +688,42 @@
         },
         {
           "name": "custom-key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has content when applicable\", function () {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.expect(pm.response.text()).to.not.be.undefined;",
+                  "    }",
+                  "});",
+                  "",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "if (contentType.includes(\"application/json\") && pm.response.text()) {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response body is valid JSON\", function () {",
+                  "        pm.expect(jsonData).to.not.be.undefined;",
+                  "    });",
+                  "",
+                  "    pm.test(\"JSON response is an object or array\", function () {",
+                  "        pm.expect(Array.isArray(jsonData) || typeof jsonData === \"object\").to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "noauth"
@@ -343,6 +748,42 @@
         },
         {
           "name": "high-frequency",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has content when applicable\", function () {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.expect(pm.response.text()).to.not.be.undefined;",
+                  "    }",
+                  "});",
+                  "",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "if (contentType.includes(\"application/json\") && pm.response.text()) {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response body is valid JSON\", function () {",
+                  "        pm.expect(jsonData).to.not.be.undefined;",
+                  "    });",
+                  "",
+                  "    pm.test(\"JSON response is an object or array\", function () {",
+                  "        pm.expect(Array.isArray(jsonData) || typeof jsonData === \"object\").to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "noauth"
@@ -367,6 +808,42 @@
         },
         {
           "name": "expensive-operation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 10 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has content when applicable\", function () {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.expect(pm.response.text()).to.not.be.undefined;",
+                  "    }",
+                  "});",
+                  "",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "if (contentType.includes(\"application/json\") && pm.response.text()) {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response body is valid JSON\", function () {",
+                  "        pm.expect(jsonData).to.not.be.undefined;",
+                  "    });",
+                  "",
+                  "    pm.test(\"JSON response is an object or array\", function () {",
+                  "        pm.expect(Array.isArray(jsonData) || typeof jsonData === \"object\").to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "noauth"
@@ -400,6 +877,42 @@
         },
         {
           "name": "complex-expensive-operation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 10 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has content when applicable\", function () {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.expect(pm.response.text()).to.not.be.undefined;",
+                  "    }",
+                  "});",
+                  "",
+                  "const contentType = pm.response.headers.get(\"Content-Type\") || \"\";",
+                  "if (contentType.includes(\"application/json\") && pm.response.text()) {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response body is valid JSON\", function () {",
+                  "        pm.expect(jsonData).to.not.be.undefined;",
+                  "    });",
+                  "",
+                  "    pm.test(\"JSON response is an object or array\", function () {",
+                  "        pm.expect(Array.isArray(jsonData) || typeof jsonData === \"object\").to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "noauth"

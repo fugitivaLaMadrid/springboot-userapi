@@ -4,6 +4,7 @@ import com.fugitivalamadrid.api.userapi.dto.UserPartialRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserResponse;
 import com.fugitivalamadrid.api.userapi.exception.UserNotFoundException;
+import com.fugitivalamadrid.api.userapi.mapper.UserMapper;
 import com.fugitivalamadrid.api.userapi.model.User;
 import com.fugitivalamadrid.api.userapi.repository.UserRepository;
 import org.slf4j.Logger;
@@ -22,10 +23,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, AuditLogService auditLogService) {
+    public UserService(UserRepository userRepository, AuditLogService auditLogService,  UserMapper userMapper) {
         this.userRepository = userRepository;
         this.auditLogService = auditLogService;
+        this.userMapper = userMapper;
+
     }
 
     /**
@@ -37,7 +41,7 @@ public class UserService {
         log.info("Fetching all users from database");
         return userRepository.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(userMapper::toResponse)
                 .toList();
     }
 
@@ -54,7 +58,7 @@ public class UserService {
                     log.warn("User not found with id: {}", id);
                     return new UserNotFoundException(id);
                 });
-        return toResponse(user);
+        return userMapper.toResponse(user);
     }
 
     /**
@@ -64,12 +68,9 @@ public class UserService {
      */
     @CacheEvict(value = "users", allEntries = true)
     public UserResponse createUser(UserRequest request) {
-        User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .createdAt(LocalDateTime.now())
-                .build();
-        UserResponse response = toResponse(userRepository.save(user));
+        User user = userMapper.toEntity(request);
+        user.setCreatedAt(LocalDateTime.now());
+        UserResponse response = userMapper.toResponse(userRepository.save(user));
         auditLogService.logCreated(request.getUsername());
         log.info("User created with id: {}", response.getId());
         return response;
@@ -86,22 +87,8 @@ public class UserService {
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
-        log.info("User deleted with id: {}", id);
         auditLogService.logDeleted(id);
-    }
-
-    /**
-     * Converts a User to a UserResponse.
-     * @param user the user
-     * @return the user response
-     */
-    private UserResponse toResponse(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .createdAt(user.getCreatedAt())
-                .build();
+        log.info("User deleted with id: {}", id);
     }
 
     /**
@@ -119,8 +106,8 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         userRepository.save(user);
-        log.info("User updated with id: {}", id);
         auditLogService.logUpdated(id, request.getUsername());
+        log.info("User updated with id: {}", id);
     }
 
     /**
@@ -132,19 +119,14 @@ public class UserService {
     public void updateUserPartial(Long id, UserPartialRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("Update data failed - user not found with id: {}", id);
+                    log.warn("Partial update failed - user not found with id: {}", id);
                     return new UserNotFoundException(id);
                 });
-
-        // Only update fields that are not null
-        if (request.getUsername() != null) {
-            user.setUsername(request.getUsername());
-        }
-        if (request.getEmail() != null) {
-            user.setEmail(request.getEmail());
-        }
+        if (request.getUsername() != null) user.setUsername(request.getUsername());
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
         userRepository.save(user);
         auditLogService.logPartialUpdated(id);
+
         log.info("User partially updated with id: {}", id);
     }
 
@@ -157,7 +139,6 @@ public class UserService {
      */
     public List<UserResponse> searchUsers(String name, String sortBy, String direction) {
         log.info("Searching users with name: {}, sortBy: {}, direction: {}", name, sortBy, direction);
-
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
@@ -165,7 +146,7 @@ public class UserService {
         return userRepository.findAll(sort)
                 .stream()
                 .filter(user -> user.getUsername().toLowerCase().contains(name.toLowerCase()))
-                .map(this::toResponse)
+                .map(userMapper::toResponse)
                 .toList();
     }
 }

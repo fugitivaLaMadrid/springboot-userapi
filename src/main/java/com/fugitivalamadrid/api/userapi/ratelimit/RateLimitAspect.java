@@ -35,7 +35,7 @@ public class RateLimitAspect {
      */
     @SuppressWarnings("unused")
     @Around("@annotation(rateLimit)")
-    public Object rateLimit(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable {
+    public Object rateLimit(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable { // NOSONAR - Used by AOP
         String key = generateKey(joinPoint, rateLimit);
         RateLimiter limiter = getOrCreateRateLimiter(key, rateLimit);
         
