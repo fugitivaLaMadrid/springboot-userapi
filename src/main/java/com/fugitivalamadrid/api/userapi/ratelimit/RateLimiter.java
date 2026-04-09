@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Getter
 public class RateLimiter {
+    @Getter
     private final int maxRequests;
     private final long windowSizeMillis;
     private final AtomicInteger requestCount;

@@ -4,6 +4,7 @@ import com.fugitivalamadrid.api.userapi.dto.UserPartialRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserResponse;
 import com.fugitivalamadrid.api.userapi.exception.UserNotFoundException;
+import com.fugitivalamadrid.api.userapi.mapper.UserMapper;
 import com.fugitivalamadrid.api.userapi.model.User;
 import com.fugitivalamadrid.api.userapi.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +33,9 @@ import static org.mockito.Mockito.*;
 
     @Mock
     private AuditLogService auditLogService;
+
+    @Mock
+    private UserMapper userMapper;
 
     // UserService is the REAL class we are testing
     // Mockito injects the mock UserRepository into it automatically
@@ -75,6 +79,21 @@ import static org.mockito.Mockito.*;
         User bob = buildUser(2L, "bob", "bob@example.com");
         when(userRepository.findAll()).thenReturn(List.of(alice, bob));
 
+        UserResponse aliceResponse = UserResponse.builder()
+                .id(1L)
+                .username("alice")
+                .email("alice@example.com")
+                .createdAt(alice.getCreatedAt())
+                .build();
+        UserResponse bobResponse = UserResponse.builder()
+                .id(2L)
+                .username("bob")
+                .email("bob@example.com")
+                .createdAt(bob.getCreatedAt())
+                .build();
+        when(userMapper.toResponse(alice)).thenReturn(aliceResponse);
+        when(userMapper.toResponse(bob)).thenReturn(bobResponse);
+
         // ACT
         List<UserResponse> result = userService.getAllUsers();
 
@@ -92,6 +111,14 @@ import static org.mockito.Mockito.*;
         // ARRANGE — mock returns alice wrapped in Optional
         User alice = buildUser(1L, "alice", "alice@example.com");
         when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+
+        UserResponse aliceResponse = UserResponse.builder()
+                .id(1L)
+                .username("alice")
+                .email("alice@example.com")
+                .createdAt(alice.getCreatedAt())
+                .build();
+        when(userMapper.toResponse(alice)).thenReturn(aliceResponse);
 
         // ACT
         UserResponse result = userService.getUserById(1L);
@@ -124,10 +151,23 @@ import static org.mockito.Mockito.*;
     void createUser_savesAndReturnsUser() {
         // ARRANGE
         UserRequest request = new UserRequest("alice", "alice@example.com");
+        User userToCreate = User.builder()
+                .username("alice")
+                .email("alice@example.com")
+                .build();
         User savedUser = buildUser(1L, "alice", "alice@example.com");
 
+        when(userMapper.toEntity(request)).thenReturn(userToCreate);
         // When save() is called with any User object, return savedUser
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        UserResponse expectedResponse = UserResponse.builder()
+                .id(1L)
+                .username("alice")
+                .email("alice@example.com")
+                .createdAt(savedUser.getCreatedAt())
+                .build();
+        when(userMapper.toResponse(savedUser)).thenReturn(expectedResponse);
 
         // ACT
         UserResponse result = userService.createUser(request);
