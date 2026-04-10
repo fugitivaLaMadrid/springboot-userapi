@@ -1301,6 +1301,586 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "actuator",
+      "item": [
+        {
+          "name": "actuator_health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is less than 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response has health status\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"status\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Health status is UP\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.status).to.eql(\"UP\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "actuator_info",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is under 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Info response is a JSON object\", function () {\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "    pm.expect(Array.isArray(jsonData)).to.eql(false);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Info endpoint returns at least one detail\", function () {\r",
+                  "    pm.expect(Object.keys(jsonData).length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"If build/app/git details exist, they are objects\", function () {\r",
+                  "    [\"build\", \"app\", \"git\"].forEach(function (key) {\r",
+                  "        if (Object.prototype.hasOwnProperty.call(jsonData, key)) {\r",
+                  "            pm.expect(jsonData[key]).to.be.an(\"object\");\r",
+                  "        }\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/info",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "info"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "actuator_metrics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is under 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Metrics response contains names array\", function () {\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "    pm.expect(jsonData).to.have.property(\"names\");\r",
+                  "    pm.expect(jsonData.names).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Metrics list is not empty\", function () {\r",
+                  "    pm.expect(jsonData.names.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Metrics list contains common actuator metrics\", function () {\r",
+                  "    const expectedAnyOf = [\"jvm.memory.used\", \"http.server.requests\", \"process.uptime\", \"system.cpu.usage\"];\r",
+                  "    const hasKnownMetric = expectedAnyOf.some(function (name) {\r",
+                  "        return jsonData.names.includes(name);\r",
+                  "    });\r",
+                  "    pm.expect(hasKnownMetric).to.eql(true);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/metrics",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "metrics"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "http.server.requests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is under 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Metric response has required top-level fields\", function () {\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "    pm.expect(jsonData).to.have.property(\"name\", \"http.server.requests\");\r",
+                  "    pm.expect(jsonData).to.have.property(\"measurements\");\r",
+                  "    pm.expect(jsonData.measurements).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Measurements include statistic and value\", function () {\r",
+                  "    pm.expect(jsonData.measurements.length).to.be.above(0);\r",
+                  "    jsonData.measurements.forEach(function (measurement) {\r",
+                  "        pm.expect(measurement).to.have.property(\"statistic\");\r",
+                  "        pm.expect(measurement).to.have.property(\"value\");\r",
+                  "        pm.expect(measurement.value).to.be.a(\"number\");\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Available tags, if present, are well formed\", function () {\r",
+                  "    if (Object.prototype.hasOwnProperty.call(jsonData, \"availableTags\")) {\r",
+                  "        pm.expect(jsonData.availableTags).to.be.an(\"array\");\r",
+                  "        jsonData.availableTags.forEach(function (tag) {\r",
+                  "            pm.expect(tag).to.have.property(\"tag\");\r",
+                  "            pm.expect(tag).to.have.property(\"values\");\r",
+                  "            pm.expect(tag.values).to.be.an(\"array\");\r",
+                  "        });\r",
+                  "    }\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/metrics/http.server.requests",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "metrics",
+                "http.server.requests"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "actuator_loggers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is under 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Response contains loggers object\", function () {\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "    pm.expect(jsonData).to.have.property(\"loggers\");\r",
+                  "    pm.expect(jsonData.loggers).to.be.an(\"object\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"At least one logger is present\", function () {\r",
+                  "    pm.expect(Object.keys(jsonData.loggers).length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Logger entries contain configuredLevel and effectiveLevel\", function () {\r",
+                  "    const loggerNames = Object.keys(jsonData.loggers);\r",
+                  "    const firstLogger = jsonData.loggers[loggerNames[0]];\r",
+                  "\r",
+                  "    pm.expect(firstLogger).to.have.property(\"configuredLevel\");\r",
+                  "    pm.expect(firstLogger).to.have.property(\"effectiveLevel\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Logger levels are valid when present\", function () {\r",
+                  "    const validLevels = [\"TRACE\", \"DEBUG\", \"INFO\", \"WARN\", \"ERROR\", \"OFF\", null];\r",
+                  "    const loggerNames = Object.keys(jsonData.loggers);\r",
+                  "\r",
+                  "    loggerNames.forEach(function (name) {\r",
+                  "        const logger = jsonData.loggers[name];\r",
+                  "        pm.expect(validLevels).to.include(\r",
+                  "            logger.configuredLevel === undefined ? null : logger.configuredLevel\r",
+                  "        );\r",
+                  "        pm.expect(validLevels).to.include(\r",
+                  "            logger.effectiveLevel === undefined ? null : logger.effectiveLevel\r",
+                  "        );\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/loggers",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "loggers"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Testing_Structured_Logging_to_File",
+      "item": [
+        {
+          "name": "createUser",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is success for create\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is acceptable\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON when body is present\", function () {",
+                  "    if (pm.response.text()) {",
+                  "        pm.response.to.be.json;",
+                  "    }",
+                  "});",
+                  "",
+                  "if (pm.response.text()) {",
+                  "    const json = pm.response.json();",
+                  "    const expectedUsername = pm.variables.get(\"uniqueUsername\");",
+                  "    const expectedEmail = pm.variables.get(\"uniqueEmail\");",
+                  "",
+                  "    pm.test(\"Created user response is an object\", function () {",
+                  "        pm.expect(json).to.be.an(\"object\");",
+                  "        pm.expect(Array.isArray(json)).to.eql(false);",
+                  "    });",
+                  "",
+                  "    pm.test(\"Created user contains an identifier\", function () {",
+                  "        const hasIdentifier =",
+                  "            json.id !== undefined ||",
+                  "            json.userId !== undefined ||",
+                  "            json.uuid !== undefined ||",
+                  "            json.identifier !== undefined;",
+                  "",
+                  "        pm.expect(hasIdentifier).to.equal(true);",
+                  "    });",
+                  "",
+                  "    pm.test(\"Created user returns the submitted username when present\", function () {",
+                  "        if (json.username !== undefined) {",
+                  "            pm.expect(json.username).to.eql(expectedUsername);",
+                  "        }",
+                  "    });",
+                  "",
+                  "    pm.test(\"Created user returns the submitted email when present\", function () {",
+                  "        if (json.email !== undefined) {",
+                  "            pm.expect(json.email).to.eql(expectedEmail);",
+                  "        }",
+                  "    });",
+                  "",
+                  "    pm.test(\"Created user returns core fields or nested payload\", function () {",
+                  "        const hasCreatedData =",
+                  "            json.username !== undefined ||",
+                  "            json.email !== undefined ||",
+                  "            json.data !== undefined ||",
+                  "            json.user !== undefined;",
+                  "",
+                  "        pm.expect(hasCreatedData).to.equal(true);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.set(\"uniqueEmail\", \"test_\" + Date.now() + \"@gmail.com\");\r",
+                  "pm.variables.set(\"uniqueUsername\", \"test_\" + Date.now());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"{{uniqueUsername}}\",\r\n    \"email\": \"{{uniqueEmail}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAllUsers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is under 2000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\") || \"\";\r",
+                  "    pm.expect(contentType).to.include(\"application/json\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "users_999",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is acceptable\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Content-Type is JSON\", function () {\r",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response body is a single user object\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "    pm.expect(jsonData).to.not.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"User id matches requested id\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"id\");\r",
+                  "    pm.expect(String(jsonData.id)).to.eql(\"999\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"User object has basic expected fields\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"id\");\r",
+                  "    pm.expect(jsonData.id).to.not.be.null;\r",
+                  "\r",
+                  "    if (jsonData.name !== undefined) {\r",
+                  "        pm.expect(jsonData.name).to.be.a(\"string\");\r",
+                  "    }\r",
+                  "    if (jsonData.email !== undefined) {\r",
+                  "        pm.expect(jsonData.email).to.be.a(\"string\");\r",
+                  "    }\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users/999",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
