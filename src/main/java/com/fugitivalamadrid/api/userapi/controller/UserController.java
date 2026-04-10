@@ -10,9 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import com.fugitivalamadrid.api.userapi.ratelimit.RateLimit;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
+@Tag(name = "Users", description = "User management endpoints")
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -27,6 +29,7 @@ public class UserController {
      * Returns a list of all users.
      * @return a list of all users
      */
+    @Operation(summary = "Get all users")
     @RateLimit
     @GetMapping
     public List<UserResponse> getAllUsers() {
@@ -39,6 +42,7 @@ public class UserController {
      * @param id the user id
      * @return the user
      */
+    @Operation(summary = "Get user by ID")
     @GetMapping("/{id}")
     public UserResponse getUserById(@PathVariable Long id) {
         log.info("GET /users/{} - fetching user by id", id);
@@ -50,6 +54,7 @@ public class UserController {
      * @param request the user request
      * @return the created user
      */
+    @Operation(summary = "Create a new user")
     @RateLimit(maxRequests = 5, windowSizeMillis = 80000)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -62,6 +67,7 @@ public class UserController {
      * Deletes a user by id.
      * @param id the user id
      */
+    @Operation(summary = "Delete a user by ID")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable Long id) {
@@ -74,6 +80,7 @@ public class UserController {
      * @param id the user id
      * @param request the user request
      */
+    @Operation(summary = "Update a user by ID")
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
@@ -86,6 +93,7 @@ public class UserController {
      * @param id the user id
      * @param request the user partial request
      */
+    @Operation(summary = "Partially update a user by ID")
     @PatchMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateUserPartial(@PathVariable Long id, @Valid @RequestBody UserPartialRequest request) {
@@ -100,6 +108,7 @@ public class UserController {
      * @param direction sort direction asc or desc (default: asc)
      * @return list of matching users
      */
+    @Operation(summary = "Search users by username")
     @GetMapping("/search")
     public List<UserResponse> searchUsers(
             @RequestParam String name,

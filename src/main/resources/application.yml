@@ -19,7 +19,7 @@ spring:
 
   sql:
     init:
-      mode: always
+      mode: embedded
 
 #actuator
 management:
@@ -40,3 +40,11 @@ info:
     version: 1.0.0
     description: User Management REST API
     java-version: 17
+
+#swagger
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+    enabled: true
