@@ -21,8 +21,6 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     
-    private static final String TIMESTAMP = LocalDateTime.now().toString();
-
     // Response field constants
     private static final String TIMESTAMP_KEY = "timestamp";
     private static final String STATUS_KEY = "status";
@@ -48,7 +46,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, NOT_FOUND_STATUS,
                 ERROR_KEY, NOT_FOUND_ERROR,
                 MESSAGE_KEY, ex.getMessage()
@@ -61,7 +59,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDuplicateKey(DataIntegrityViolationException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, CONFLICT_STATUS,
                 ERROR_KEY, CONFLICT_ERROR,
                 MESSAGE_KEY, DUPLICATE_USER_MESSAGE
@@ -75,7 +73,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RateLimitException.class)
     public ResponseEntity<Map<String, Object>> handleRateLimit(RateLimitException ex) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, TOO_MANY_REQUESTS_STATUS,
                 ERROR_KEY, TOO_MANY_REQUESTS_ERROR,
                 MESSAGE_KEY, ex.getMessage(),
@@ -92,7 +90,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleMalformedJson(HttpMessageNotReadableException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, BAD_REQUEST_STATUS,
                 ERROR_KEY, BAD_REQUEST_ERROR,
                 MESSAGE_KEY, "Malformed JSON request body"
@@ -113,7 +111,7 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, BAD_REQUEST_STATUS,
                 ERROR_KEY, BAD_REQUEST_ERROR,
                 MESSAGE_KEY, message
@@ -127,7 +125,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, BAD_REQUEST_STATUS,
                 ERROR_KEY, BAD_REQUEST_ERROR,
                 MESSAGE_KEY, "Invalid value '" + ex.getValue() + "' for parameter '" + ex.getName() + "'"
@@ -141,7 +139,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<Map<String, Object>> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, 405,
                 ERROR_KEY, "Method Not Allowed",
                 MESSAGE_KEY, "HTTP method '" + ex.getMethod() + "' is not supported for this endpoint"
@@ -155,7 +153,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, 404,
                 ERROR_KEY, NOT_FOUND_ERROR,
                 MESSAGE_KEY, "The requested endpoint does not exist"
@@ -170,7 +168,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
         log.error("Unexpected error: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                TIMESTAMP_KEY, TIMESTAMP,
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
                 STATUS_KEY, 500,
                 ERROR_KEY, "Internal Server Error",
                 MESSAGE_KEY, "An unexpected error occurred"
