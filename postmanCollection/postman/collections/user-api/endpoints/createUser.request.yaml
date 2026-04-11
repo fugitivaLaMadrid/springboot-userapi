@@ -1,4 +1,5 @@
 $kind: http-request
+name: createUser
 url: http://localhost:8080/users
 method: POST
 body:
@@ -12,9 +13,11 @@ body:
     }"
 scripts:
   - type: beforeRequest
-    code: |-
-      pm.variables.set('uniqueEmail', 'victoria_' + Date.now() + '@gmail.com');
-      pm.variables.set('uniqueUsername', 'victoria_' + Date.now());
+    code: >-
+      pm.variables.set('uniqueEmail', 'user_email_test' + Date.now() +
+      '@gmail.com');
+
+      pm.variables.set('uniqueUsername', 'user_name_test_' + Date.now());
     language: text/javascript
   - type: afterResponse
     code: >-
