@@ -1,4 +1,5 @@
 $kind: http-request
+name: DeleteUserById
 url: http://localhost:8080/users/{{deleteUserId}}
 method: DELETE
 scripts:
@@ -14,8 +15,8 @@ scripts:
           body: {
               mode: 'raw',
               raw: JSON.stringify({
-                  username: 'delete_test_' + Date.now(),
-                  email: 'delete_' + Date.now() + '@gmail.com'
+                  username: 'username_test_' + Date.now(),
+                  email: 'user_email_test' + Date.now() + '@gmail.com'
               })
           }
       }, function (err, res) {
