@@ -1,8 +1,12 @@
 $kind: http-request
+name: http.server.requests
 url: http://localhost:8080/actuator/metrics/http.server.requests
 method: GET
 auth:
-  type: noauth
+  type: basic
+  credentials:
+    username: admin
+    password: admin123
 scripts:
   - type: afterResponse
     code: >-
