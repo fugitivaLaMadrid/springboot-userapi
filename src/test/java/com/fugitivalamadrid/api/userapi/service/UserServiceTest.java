@@ -100,8 +100,10 @@ import static org.mockito.Mockito.*;
         List<UserResponse> result = userService.getAllUsers();
 
         // ASSERT
-        assertThat(result).hasSize(2);
+        assertThat(result).isNotNull().hasSize(2);
+        assertThat(result.get(0)).isNotNull();
         assertThat(result.get(0).getUsername()).isEqualTo("alice");
+        assertThat(result.get(1)).isNotNull();
         assertThat(result.get(1).getUsername()).isEqualTo("bob");
     }
 
@@ -126,6 +128,7 @@ import static org.mockito.Mockito.*;
         UserResponse result = userService.getUserById(1L);
 
         // ASSERT
+        assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getUsername()).isEqualTo("alice");
         assertThat(result.getEmail()).isEqualTo("alice@example.com");
@@ -175,6 +178,7 @@ import static org.mockito.Mockito.*;
         UserResponse result = userService.createUser(request);
 
         // ASSERT
+        assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getUsername()).isEqualTo("alice");
         assertThat(result.getEmail()).isEqualTo("alice@example.com");

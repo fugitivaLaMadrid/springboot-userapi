@@ -14,7 +14,7 @@ public class RateLimiter {
     private final long windowSizeMillis;
     private final AtomicInteger requestCount;
     private final AtomicLong windowStart;
-    private final Object lock = new Object();
+    private final transient Object lock = new Object();
 
     /**
      * Creates a new rate limiter.

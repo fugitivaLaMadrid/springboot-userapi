@@ -11,3 +11,8 @@ spring:
   sql:
     init:
       mode: never
+  security:
+    user:
+      name: admin
+      password: admin123
+      roles: ADMIN

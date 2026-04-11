@@ -1,0 +1,33 @@
+$kind: http-request
+url: http://localhost:8080/users
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"username\": \"{{uniqueUsername}}\",\r
+
+    \    \"email\": \"{{uniqueEmail}}\"\r
+
+    }"
+scripts:
+  - type: beforeRequest
+    code: |-
+      pm.variables.set('uniqueEmail', 'victoria_' + Date.now() + '@gmail.com');
+      pm.variables.set('uniqueUsername', 'victoria_' + Date.now());
+    language: text/javascript
+  - type: afterResponse
+    code: >-
+      pm.test('Status is 201 Created', function () {
+      pm.response.to.have.status(201); });
+
+      pm.test('Response is JSON', function () { pm.response.to.be.json; });
+
+      if (pm.response.text()) {
+          const json = pm.response.json();
+          pm.test('Created user has an id', function () { pm.expect(json.id).to.not.be.undefined; });
+          pm.test('Created user returns submitted username', function () { pm.expect(json.username).to.eql(pm.variables.get('uniqueUsername')); });
+          pm.test('Created user returns submitted email', function () { pm.expect(json.email).to.eql(pm.variables.get('uniqueEmail')); });
+      }
+    language: text/javascript
+order: 3000

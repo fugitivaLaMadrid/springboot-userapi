@@ -1,4 +1,5 @@
 -- Sample users for development
+
 -- Clear table and reset IDs for predictable testing
 TRUNCATE TABLE users RESTART IDENTITY CASCADE;
 

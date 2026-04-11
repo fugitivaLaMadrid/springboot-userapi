@@ -10,21 +10,26 @@ This document explains the project layout, prerequisites, common commands, and h
 src/
 ├─ main/
 │  ├─ java/
-│  │  └─ com/fugitivalamadrid/api/userapi/   # App packages
-│  │     ├─ controller/                       # REST controllers
-│  │     ├─ service/                          # Business logic
-│  │     ├─ repository/                       # Database access
-│  │     ├─ model/                            # Entities
-│  │     ├─ dto/                              # Request and Response DTOs
-│  │     ├─ exception/                        # Custom exceptions
-│  │     ├─ mapper/                           # Object mappers
-│  │     └─ ratelimit/                        # Rate limiting logic
+│  │  └─ com/fugitivalamadrid/api/userapi/     # App packages
+│  │     ├─ controller/                        # REST controllers
+│  │     ├─ service/                           # Business logic
+│  │     ├─ repository/                        # Database access
+│  │     ├─ model/                             # Entities / DTOs
+│  │     ├─ dto/                               # Request and Response DTOs
+│  │     ├─ exception/                         # Custom exceptions
+│  │     ├─ mapper/                            # Object mappers (MapStruct)
+│  │     ├─ config/                            # Security & application config
+│  │     └─ ratelimit/                         # Rate limiting logic
 │  └─ resources/
-│     ├─ application.yml                      # Prod config
-│     └─ application-test.yml                 # Test config (H2)
+│     ├─ application.yml                       # Prod config (PostgreSQL)
+│     ├─ application-test.yml                  # Test config (H2)
+│     └─ logback-spring.xml                    # Logging configuration
 └─ test/
-  └─ java/
-    └─ com/fugitivalamadrid/api/userapi/     # Test classes
+   └─ java/
+      └─ com/fugitivalamadrid/api/userapi/    # Test classes
+         ├─ controller/                         # Integration tests
+         ├─ service/                            # Unit tests
+         └─ ratelimit/                          # Rate limiter tests
 ```
 
 ### Important Files
