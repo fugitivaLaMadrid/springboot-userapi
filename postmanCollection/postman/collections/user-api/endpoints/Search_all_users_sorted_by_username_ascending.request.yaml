@@ -1,0 +1,31 @@
+$kind: http-request
+url: http://localhost:8080/users/search?name={{searchName}}&sortBy={{sortBy}}&direction={{direction}}
+method: GET
+queryParams:
+  name: "{{searchName}}"
+  sortBy: "{{sortBy}}"
+  direction: "{{direction}}"
+scripts:
+  - type: beforeRequest
+    code: |-
+      pm.variables.set('searchName', 'a');
+      pm.variables.set('sortBy', 'username');
+      pm.variables.set('direction', 'asc');
+    language: text/javascript
+  - type: afterResponse
+    code: >-
+      pm.test('Status is 200', function () { pm.response.to.have.status(200);
+      });
+
+      pm.test('Response is JSON array', function () {
+      pm.expect(pm.response.json()).to.be.an('array'); });
+
+      if (pm.response.json().length > 1) {
+          pm.test('Usernames are sorted ascending', function () {
+              const names = pm.response.json().map(u => u.username.toLowerCase());
+              const sorted = [...names].sort((a, b) => a.localeCompare(b));
+              pm.expect(names).to.eql(sorted);
+          });
+      }
+    language: text/javascript
+order: 9000

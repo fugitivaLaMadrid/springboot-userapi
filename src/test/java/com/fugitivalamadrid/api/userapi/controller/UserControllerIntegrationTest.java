@@ -1,5 +1,6 @@
 package com.fugitivalamadrid.api.userapi.controller;
 
+import com.fugitivalamadrid.api.userapi.dto.UserPartialRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.model.User;
 import com.fugitivalamadrid.api.userapi.repository.UserRepository;
@@ -8,12 +9,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 
 import java.time.LocalDateTime;
 
@@ -22,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
+@WithMockUser(roles = "ADMIN")
 @ActiveProfiles("test")
 class UserControllerIntegrationTest {
 
@@ -33,12 +39,21 @@ class UserControllerIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
+                .build();
         userRepository.deleteAll();
+        // Clear cache so tests don't interfere with each other
+        cacheManager.getCacheNames()
+                .forEach(name -> cacheManager.getCache(name).clear());
     }
 
     // ── GET /users ────────────────────────────────────────────────────────────
@@ -149,17 +164,8 @@ class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.message", containsString("999")));
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // ── PUT /users/{id} ───────────────────────────────────────────────────────
 
-    private User createUserInDb(String username, String email) {
-        return userRepository.save(User.builder()
-                .username(username)
-                .email(email)
-                .createdAt(LocalDateTime.now())
-                .build());
-    }
-
-    // -- update ------------
     @Test
     @DisplayName("PUT /users/{id} returns 204 when user is successfully updated")
     void updateUser_returns204_whenSuccessful() throws Exception {
@@ -171,7 +177,6 @@ class UserControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        // Verify the user was actually updated
         mockMvc.perform(get("/users/{id}", saved.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", is("alice-updated")))
@@ -179,17 +184,30 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("PUT /users/{id} returns 404 when database is empty")
+    void updateUser_returns404_whenDatabaseIsEmpty() throws Exception {
+        UserRequest request = new UserRequest("alice", "alice@example.com");
+
+        mockMvc.perform(put("/users/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is(404)));
+    }
+
+    // ── PATCH /users/{id} ─────────────────────────────────────────────────────
+
+    @Test
     @DisplayName("PATCH /users/{id} returns 204 when user is successfully updated")
     void updateUserPartial_returns204_whenSuccessful() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
-        UserRequest request = new UserRequest("alice", "alice-update@example.com");
+        UserPartialRequest request = new UserPartialRequest(null, "alice-update@example.com");
 
         mockMvc.perform(patch("/users/{id}", saved.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        // Verify the user was actually updated
         mockMvc.perform(get("/users/{id}", saved.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", is("alice-update@example.com")));
@@ -244,13 +262,11 @@ class UserControllerIntegrationTest {
     void createUser_returns409_whenDuplicateEmail() throws Exception {
         UserRequest request = new UserRequest("alice", "alice@example.com");
 
-        // First creation succeeds
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
-        // Second creation with same email fails
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -262,14 +278,12 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("POST /users returns 409 when username already exists")
     void createUser_returns409_whenDuplicateUsername() throws Exception {
-        // First user
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new UserRequest("alice", "alice@example.com"))))
                 .andExpect(status().isCreated());
 
-        // Same username different email
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -281,7 +295,6 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("GET /users returns empty list when database is empty")
     void getAllUsers_returnsEmptyList_whenDatabaseIsEmpty() throws Exception {
-        // Database is already empty from @BeforeEach deleteAll()
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -312,15 +325,23 @@ class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.status", is(404)));
     }
 
-    @Test
-    @DisplayName("PUT /users/{id} returns 404 when database is empty")
-    void updateUser_returns404_whenDatabaseIsEmpty() throws Exception {
-        UserRequest request = new UserRequest("alice", "alice@example.com");
+    // ── SECURITY ──────────────────────────────────────────────────────────────
 
-        mockMvc.perform(put("/users/{id}", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status", is(404)));
+    @Test
+    @WithAnonymousUser
+    @DisplayName("GET /users returns 401 when no authentication provided")
+    void getAllUsers_returns401_whenNotAuthenticated() throws Exception {
+        mockMvc.perform(get("/users"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private User createUserInDb(String username, String email) {
+        return userRepository.save(User.builder()
+                .username(username)
+                .email(email)
+                .createdAt(LocalDateTime.now())
+                .build());
     }
 }

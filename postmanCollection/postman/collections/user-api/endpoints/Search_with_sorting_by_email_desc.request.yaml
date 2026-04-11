@@ -1,0 +1,26 @@
+$kind: http-request
+url: http://localhost:8080/users/search?name={{searchName}}&sortBy={{sortBy}}&direction={{direction}}
+method: GET
+queryParams:
+  name: "{{searchName}}"
+  sortBy: "{{sortBy}}"
+  direction: "{{direction}}"
+scripts:
+  - type: beforeRequest
+    code: |-
+      pm.variables.set('searchName', 'alice');
+      pm.variables.set('sortBy', 'email');
+      pm.variables.set('direction', 'desc');
+    language: text/javascript
+  - type: afterResponse
+    code: >-
+      pm.test('Status code is 200', function () {
+      pm.response.to.have.status(200); });
+
+      pm.test('Response time is under 2000ms', function () {
+      pm.expect(pm.response.responseTime).to.be.below(2000); });
+
+      pm.test('Response is JSON array', function () {
+      pm.expect(pm.response.json()).to.be.an('array'); });
+    language: text/javascript
+order: 8000
