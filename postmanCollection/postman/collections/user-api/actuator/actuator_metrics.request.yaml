@@ -1,0 +1,24 @@
+$kind: http-request
+url: http://localhost:8080/actuator/metrics
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: >-
+      pm.test('Status code is 200', function () {
+      pm.response.to.have.status(200); });
+
+      pm.test('Metrics contains names array', function () {
+          const json = pm.response.json();
+          pm.expect(json).to.have.property('names');
+          pm.expect(json.names).to.be.an('array').that.is.not.empty;
+      });
+
+      pm.test('Metrics list contains common metrics', function () {
+          const names = pm.response.json().names;
+          const expected = ['jvm.memory.used', 'http.server.requests', 'process.uptime'];
+          pm.expect(expected.some(m => names.includes(m))).to.be.true;
+      });
+    language: text/javascript
+order: 3000

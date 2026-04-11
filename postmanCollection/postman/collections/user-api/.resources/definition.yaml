@@ -1,0 +1,8 @@
+$kind: collection
+auth:
+  - id: 634f9119-2afc-4fbb-a3d6-9f85730c2984
+    type: basic
+    name: basic auth
+    credentials:
+      username: admin
+      password: admin123
