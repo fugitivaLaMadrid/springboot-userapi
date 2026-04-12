@@ -133,6 +133,19 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles invalid request parameters.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                TIMESTAMP_KEY, LocalDateTime.now().toString(),
+                STATUS_KEY, BAD_REQUEST_STATUS,
+                ERROR_KEY, BAD_REQUEST_ERROR,
+                MESSAGE_KEY, ex.getMessage()
+        ));
+    }
+
+    /**
      * Handles HTTP method not allowed
      * Example: POST /users/1 (POST is not allowed on that endpoint)
      */
