@@ -255,6 +255,34 @@ class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$[1].username", is("anna")));
     }
 
+    @Test
+    @DisplayName("GET /users/search returns 400 when sortBy is invalid")
+    void searchUsers_returns400_whenSortByIsInvalid() throws Exception {
+        createUserInDb("alice", "alice@example.com");
+
+        mockMvc.perform(get("/users/search")
+                        .param("name", "alice")
+                        .param("sortBy", "invalidField")
+                        .param("direction", "asc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.message", containsString("Invalid sortBy value")));
+    }
+
+    @Test
+    @DisplayName("GET /users/search returns 400 when direction is invalid")
+    void searchUsers_returns400_whenDirectionIsInvalid() throws Exception {
+        createUserInDb("alice", "alice@example.com");
+
+        mockMvc.perform(get("/users/search")
+                        .param("name", "alice")
+                        .param("sortBy", "username")
+                        .param("direction", "sideways"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.message", containsString("Invalid direction value")));
+    }
+
     // ── EDGE CASES ────────────────────────────────────────────────────────────
 
     @Test

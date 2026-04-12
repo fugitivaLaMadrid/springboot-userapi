@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -307,4 +310,38 @@ import static org.mockito.Mockito.*;
 
         verify(userRepository, never()).save(any());
     }
-}
+
+    @Test
+    @DisplayName("Search users should use repository filtering and return mapped results")
+    void searchUsers_returnsMappedResults() {
+        User alice = buildUser(1L, "alice", "alice@example.com");
+        UserResponse aliceResponse = UserResponse.builder()
+                .id(1L)
+                .username("alice")
+                .email("alice@example.com")
+                .createdAt(alice.getCreatedAt())
+                .build();
+
+        when(userRepository.findByUsernameContainingIgnoreCase(eq("ali"), any(Sort.class)))
+                .thenReturn(List.of(alice));
+        when(userMapper.toResponse(alice)).thenReturn(aliceResponse);
+
+        List<UserResponse> result = userService.searchUsers("ali", "username", "asc");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUsername()).isEqualTo("alice");
+        verify(userRepository, times(1))
+                .findByUsernameContainingIgnoreCase(eq("ali"), any(Sort.class));
+    }
+
+    @Test
+    @DisplayName("Search users should throw IllegalArgumentException when sort field is invalid")
+    void searchUsers_throwsIllegalArgumentException_whenSortByIsInvalid() {
+        assertThatThrownBy(() -> userService.searchUsers("ali", "id", "asc"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid sortBy value");
+
+        verify(userRepository, never())
+                .findByUsernameContainingIgnoreCase(anyString(), any(Sort.class));
+    }
+} 

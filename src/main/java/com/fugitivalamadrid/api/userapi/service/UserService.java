@@ -13,17 +13,22 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @Service
+@Transactional
 public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
     private final UserMapper userMapper;
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("username", "email", "createdAt");
 
     public UserService(UserRepository userRepository, AuditLogService auditLogService,  UserMapper userMapper) {
         this.userRepository = userRepository;
@@ -37,6 +42,7 @@ public class UserService {
      * @return a list of all users
      */
     @Cacheable("users")
+    @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         log.info("Fetching all users from database");
         return userRepository.findAll()
@@ -51,6 +57,7 @@ public class UserService {
      * @return the user
      */
     @Cacheable(value="users", key="#id")
+    @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
         log.info("Fetching user with id: {}", id);
         User user = userRepository.findById(id)
@@ -137,16 +144,27 @@ public class UserService {
      * @param direction asc or desc
      * @return list of matching users
      */
+    @Transactional(readOnly = true)
     public List<UserResponse> searchUsers(String name, String sortBy, String direction) {
         log.info("Searching users with name: {}, sortBy: {}, direction: {}", name, sortBy, direction);
+        validateSortParameters(sortBy, direction);
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
 
-        return userRepository.findAll(sort)
+        return userRepository.findByUsernameContainingIgnoreCase(name, sort)
                 .stream()
-                .filter(user -> user.getUsername().toLowerCase().contains(name.toLowerCase()))
                 .map(userMapper::toResponse)
                 .toList();
+    }
+
+    private void validateSortParameters(String sortBy, String direction) {
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new IllegalArgumentException("Invalid sortBy value. Allowed values: username, email, createdAt");
+        }
+        String normalizedDirection = direction.toLowerCase(Locale.ROOT);
+        if (!normalizedDirection.equals("asc") && !normalizedDirection.equals("desc")) {
+            throw new IllegalArgumentException("Invalid direction value. Allowed values: asc, desc");
+        }
     }
 }
