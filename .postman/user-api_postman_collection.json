@@ -44,8 +44,8 @@
           "name": "createUser",
           "event": [
             { "listen": "prerequest", "script": { "exec": [
-              "pm.variables.set('uniqueEmail', 'victoria_' + Date.now() + '@gmail.com');",
-              "pm.variables.set('uniqueUsername', 'victoria_' + Date.now());"
+              "pm.variables.set('uniqueEmail', 'user_email_test_' + Date.now() + '@gmail.com');",
+              "pm.variables.set('uniqueUsername', 'user_name_test_' + Date.now());"
             ], "type": "text/javascript" } },
             { "listen": "test", "script": { "exec": [
               "pm.test('Status is 201 Created', function () { pm.response.to.have.status(201); });",
@@ -115,8 +115,8 @@
               "    body: {",
               "        mode: 'raw',",
               "        raw: JSON.stringify({",
-              "            username: 'delete_test_' + Date.now(),",
-              "            email: 'delete_' + Date.now() + '@gmail.com'",
+              "            username: 'user_name_test_' + Date.now(),",
+              "            email: 'user_email_test_' + Date.now() + '@gmail.com'",
               "        })",
               "    }",
               "}, function (err, res) {",
