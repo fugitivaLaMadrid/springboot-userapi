@@ -77,9 +77,14 @@ public class SecurityConfig {
                     .anyMatch(profile -> profile.equals("test"));
         }
         
-        if (isTestProfile || issuerUri == null || issuerUri.isEmpty()) {
-            // For tests, provide a default issuer URI and use JWK set URI to avoid network calls
+        if (issuerUri == null || issuerUri.isEmpty()) {
+            // For tests or when no issuer is configured, use JWK set URI to avoid network calls
             issuerUri = "http://localhost:8180/realms/userapi-realm";
+            return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
+        }
+        
+        if (isTestProfile) {
+            // For test profile with configured issuer, use JWK set URI to avoid network calls
             return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
         }
         // For production, use issuer location to enforce issuer validation
