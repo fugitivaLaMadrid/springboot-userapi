@@ -12,7 +12,7 @@ spring:
     init:
       mode: never
   security:
-    user:
-      name: admin
-      password: admin123
-      roles: ADMIN
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/userapi-realm}

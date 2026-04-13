@@ -7,6 +7,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.core.env.Environment;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 @Configuration
 @EnableWebSecurity
@@ -17,8 +20,16 @@ public class SecurityConfig {
     private static final String ACTUATOR_ENDPOINTS = "/actuator/**";
     private static final String SWAGGER_UI = "/swagger-ui/**";
     private static final String API_DOCS = "/api-docs/**";
-    private static final String REALM_NAME = "userapi";
     private static final String POST_USERS = "/users";
+    private final JwtAuthConverter jwtAuthConverter;
+
+    /**
+     * Constructor for SecurityConfig.
+     * @param jwtAuthConverter the JwtAuthConverter to use for authentication
+     */
+    public SecurityConfig(JwtAuthConverter jwtAuthConverter) {
+        this.jwtAuthConverter = jwtAuthConverter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,8 +52,27 @@ public class SecurityConfig {
                         // Everything else requires auth
                         .anyRequest().authenticated()
                 )
-                .httpBasic(basic -> basic.realmName(REALM_NAME));
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .jwtAuthenticationConverter(jwtAuthConverter)
+                        )
+                );
 
         return http.build();
+    }
+
+    /**
+     * Returns a JwtDecoder bean that decodes JWTs from the issuer.
+     * @param env the Spring environment
+     * @return a JwtDecoder bean
+     */
+    @Bean
+    public JwtDecoder jwtDecoder(Environment env) {
+        String issuerUri = env.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri");
+        if (issuerUri == null || issuerUri.isEmpty()) {
+            // For tests, provide a default issuer URI
+            issuerUri = "http://localhost:8180/realms/userapi-realm";
+        }
+        return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
     }
 }

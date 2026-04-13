@@ -1,5 +1,6 @@
 package com.fugitivalamadrid.api.userapi.service;
 
+import com.fugitivalamadrid.api.userapi.config.SecurityConfig;
 import com.fugitivalamadrid.api.userapi.dto.UserPartialRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserResponse;
@@ -46,6 +47,7 @@ import static org.mockito.Mockito.*;
     // Mockito injects the mock UserRepository into it automatically
     @InjectMocks
     private UserService userService;
+
 
     // ── Helper ────────────────────────────────────────────────────────────────
     /**
