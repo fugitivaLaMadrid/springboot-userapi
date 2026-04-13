@@ -1,6 +1,5 @@
 package com.fugitivalamadrid.api.userapi.service;
 
-import com.fugitivalamadrid.api.userapi.config.SecurityConfig;
 import com.fugitivalamadrid.api.userapi.dto.UserPartialRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserRequest;
 import com.fugitivalamadrid.api.userapi.dto.UserResponse;
