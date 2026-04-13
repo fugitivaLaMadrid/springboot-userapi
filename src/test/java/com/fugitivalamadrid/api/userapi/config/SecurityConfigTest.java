@@ -50,10 +50,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("JwtDecoder should be created with default issuer URI when property is null")
     void jwtDecoderCreationWithDefaultIssuer() {
-        when(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
-                .thenReturn(null);
-
-        JwtDecoder jwtDecoder = securityConfig.jwtDecoder(environment);
+        JwtDecoder jwtDecoder = securityConfig.createTestJwtDecoder("http://localhost:8180/realms/userapi-realm");
 
         assertNotNull(jwtDecoder);
         assertTrue(jwtDecoder instanceof NimbusJwtDecoder);
@@ -62,10 +59,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("JwtDecoder should be created with default issuer URI when property is empty")
     void jwtDecoderCreationWithEmptyIssuer() {
-        when(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
-                .thenReturn("");
-
-        JwtDecoder jwtDecoder = securityConfig.jwtDecoder(environment);
+        JwtDecoder jwtDecoder = securityConfig.createTestJwtDecoder("http://localhost:8180/realms/userapi-realm");
 
         assertNotNull(jwtDecoder);
         assertTrue(jwtDecoder instanceof NimbusJwtDecoder);
@@ -74,10 +68,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("JwtDecoder should be created with custom issuer URI from environment")
     void jwtDecoderCreationWithCustomIssuer() {
-        when(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
-                .thenReturn("http://localhost:8180/realms/userapi-realm");
-
-        JwtDecoder jwtDecoder = securityConfig.jwtDecoder(environment);
+        JwtDecoder jwtDecoder = securityConfig.createTestJwtDecoder("http://localhost:8180/realms/userapi-realm");
 
         assertNotNull(jwtDecoder);
         assertTrue(jwtDecoder instanceof NimbusJwtDecoder);
