@@ -47,6 +47,7 @@ import static org.mockito.Mockito.*;
     @InjectMocks
     private UserService userService;
 
+
     // ── Helper ────────────────────────────────────────────────────────────────
     /**
      * Builds a User object with the given id, username, and email.

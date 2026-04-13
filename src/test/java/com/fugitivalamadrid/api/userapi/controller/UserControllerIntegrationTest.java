@@ -21,13 +21,18 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Integration tests for UserController using mock authentication.
+ * These tests use @WithMockUser to simulate authenticated users with different roles.
+ */
 @SpringBootTest
-@WithMockUser(roles = "ADMIN")
 @ActiveProfiles("test")
 class UserControllerIntegrationTest {
 
@@ -56,9 +61,11 @@ class UserControllerIntegrationTest {
                 .forEach(name -> cacheManager.getCache(name).clear());
     }
 
+
     // ── GET /users ────────────────────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users returns empty list when no users exist")
     void getAllUsers_returnsEmptyList_whenNoUsers() throws Exception {
         mockMvc.perform(get("/users"))
@@ -67,6 +74,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users returns list when users exist")
     void getAllUsers_returnsList_whenUsersExist() throws Exception {
         createUserInDb("alice", "alice@example.com");
@@ -82,6 +90,7 @@ class UserControllerIntegrationTest {
     // ── GET /users/{id} ───────────────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/{id} returns user when exists")
     void getUserById_returnsUser_whenExists() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
@@ -94,6 +103,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/{id} returns 404 when user not found")
     void getUserById_returns404_whenNotFound() throws Exception {
         mockMvc.perform(get("/users/{id}", 999L))
@@ -105,6 +115,7 @@ class UserControllerIntegrationTest {
     // ── POST /users ───────────────────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /users creates user and returns created user")
     void createUser_returnsCreatedUser() throws Exception {
         UserRequest request = new UserRequest("alice", "alice@example.com");
@@ -120,6 +131,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /users returns 400 when username is blank")
     void createUser_returns400_whenUsernameBlank() throws Exception {
         UserRequest request = new UserRequest("", "alice@example.com");
@@ -131,6 +143,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /users returns 400 when email is invalid")
     void createUser_returns400_whenEmailInvalid() throws Exception {
         UserRequest request = new UserRequest("alice", "not-an-email");
@@ -144,6 +157,7 @@ class UserControllerIntegrationTest {
     // ── DELETE /users/{id} ────────────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("DELETE /users/{id} returns 204 when user exists and is deleted")
     void deleteUser_returns204_whenExists() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
@@ -156,6 +170,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("DELETE /users/{id} returns 404 when user not found")
     void deleteUser_returns404_whenNotFound() throws Exception {
         mockMvc.perform(delete("/users/{id}", 999L))
@@ -167,6 +182,7 @@ class UserControllerIntegrationTest {
     // ── PUT /users/{id} ───────────────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PUT /users/{id} returns 204 when user is successfully updated")
     void updateUser_returns204_whenSuccessful() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
@@ -184,6 +200,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PUT /users/{id} returns 404 when database is empty")
     void updateUser_returns404_whenDatabaseIsEmpty() throws Exception {
         UserRequest request = new UserRequest("alice", "alice@example.com");
@@ -198,6 +215,7 @@ class UserControllerIntegrationTest {
     // ── PATCH /users/{id} ─────────────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PATCH /users/{id} returns 204 when user is successfully updated")
     void updateUserPartial_returns204_whenSuccessful() throws Exception {
         User saved = createUserInDb("alice", "alice@example.com");
@@ -216,6 +234,7 @@ class UserControllerIntegrationTest {
     // ── GET /users/search ─────────────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/search returns matching users when name matches")
     void searchUsers_returnsMatchingUsers() throws Exception {
         createUserInDb("alice", "alice@example.com");
@@ -229,6 +248,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/search returns empty list when no name matches")
     void searchUsers_returnsEmpty_whenNoMatch() throws Exception {
         createUserInDb("alice", "alice@example.com");
@@ -240,6 +260,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/search returns sorted results when sortBy and direction provided")
     void searchUsers_returnsSortedResults() throws Exception {
         createUserInDb("alice", "alice@example.com");
@@ -256,6 +277,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/search returns 400 when sortBy is invalid")
     void searchUsers_returns400_whenSortByIsInvalid() throws Exception {
         createUserInDb("alice", "alice@example.com");
@@ -270,6 +292,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/search returns 400 when direction is invalid")
     void searchUsers_returns400_whenDirectionIsInvalid() throws Exception {
         createUserInDb("alice", "alice@example.com");
@@ -286,6 +309,7 @@ class UserControllerIntegrationTest {
     // ── EDGE CASES ────────────────────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /users returns 409 when email already exists")
     void createUser_returns409_whenDuplicateEmail() throws Exception {
         UserRequest request = new UserRequest("alice", "alice@example.com");
@@ -304,6 +328,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /users returns 409 when username already exists")
     void createUser_returns409_whenDuplicateUsername() throws Exception {
         mockMvc.perform(post("/users")
@@ -321,6 +346,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users returns empty list when database is empty")
     void getAllUsers_returnsEmptyList_whenDatabaseIsEmpty() throws Exception {
         mockMvc.perform(get("/users"))
@@ -329,6 +355,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/search returns empty list when database is empty")
     void searchUsers_returnsEmptyList_whenDatabaseIsEmpty() throws Exception {
         mockMvc.perform(get("/users/search")
@@ -338,6 +365,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/{id} returns 404 when database is empty")
     void getUserById_returns404_whenDatabaseIsEmpty() throws Exception {
         mockMvc.perform(get("/users/{id}", 1L))
@@ -346,6 +374,7 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("DELETE /users/{id} returns 404 when database is empty")
     void deleteUser_returns404_whenDatabaseIsEmpty() throws Exception {
         mockMvc.perform(delete("/users/{id}", 1L))
@@ -361,6 +390,36 @@ class UserControllerIntegrationTest {
     void getAllUsers_returns401_whenNotAuthenticated() throws Exception {
         mockMvc.perform(get("/users"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    @DisplayName("GET /users returns 403 when user has no ADMIN role")
+    void getAllUsers_returns403_whenNotAuthorized() throws Exception {
+        mockMvc.perform(get("/users"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    @DisplayName("POST /users returns 403 when user has no ADMIN role")
+    void createUser_returns403_whenNotAuthorized() throws Exception {
+        UserRequest request = new UserRequest("alice", "alice@example.com");
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    @DisplayName("DELETE /users/{id} returns 403 when user has no ADMIN role")
+    void deleteUser_returns403_whenNotAuthorized() throws Exception {
+        User saved = createUserInDb("alice", "alice@example.com");
+
+        mockMvc.perform(delete("/users/{id}", saved.getId()))
+                .andExpect(status().isForbidden());
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

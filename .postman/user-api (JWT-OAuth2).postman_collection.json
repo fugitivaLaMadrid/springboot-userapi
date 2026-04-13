@@ -1,0 +1,1188 @@
+{
+  "info": {
+    "_postman_id": "b655fd30-6cc7-470f-8f0c-96449ad46398",
+    "name": "user-api (JWT/OAuth2)",
+    "description": "User API with JWT/OAuth2 authentication via Keycloak",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12268386"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Get Access Token (Password Grant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    console.log('Token response:', json);",
+                  "    console.log('Access token found:', json.access_token ? 'YES' : 'NO');",
+                  "    pm.collectionVariables.set('accessToken', json.access_token);",
+                  "    pm.collectionVariables.set('tokenType', json.token_type);",
+                  "    pm.collectionVariables.set('expiresIn', json.expires_in);",
+                  "    console.log('Token saved to accessToken variable');",
+                  "    console.log('Current accessToken value:', pm.collectionVariables.get('accessToken'));",
+                  "    ",
+                  "    pm.test('✓ Access token received', function () {",
+                  "        pm.expect(json.access_token).to.be.a('string');",
+                  "        pm.expect(json.access_token.length).to.be.above(100);",
+                  "    });",
+                  "    ",
+                  "    pm.test('✓ Token type is Bearer', function () {",
+                  "        pm.expect(json.token_type).to.eql('Bearer');",
+                  "    });",
+                  "    ",
+                  "    pm.test('✓ Token expires in 300 seconds', function () {",
+                  "        pm.expect(json.expires_in).to.be.a('number');",
+                  "        pm.expect(json.expires_in).to.be.above(0);",
+                  "    });",
+                  "} else {",
+                  "    pm.test('✗ Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{clientId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{clientSecret}}",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "admin",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "admin123",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid profile email",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8180/realms/{{realm}}/protocol/openid-connect/token",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8180",
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Get JWT access token using Resource Owner Password Credentials (ROPC) flow\n\n**Grant Type**: password\n**Username**: admin\n**Password**: admin123\n\nThis token will be automatically stored in the `accessToken` variable and used for all subsequent requests."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Access Token (Client Credentials)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('accessToken', json.access_token);",
+                  "    ",
+                  "    pm.test('✓ Access token received', function () {",
+                  "        pm.expect(json.access_token).to.be.a('string');",
+                  "        pm.expect(json.access_token.length).to.be.above(100);",
+                  "    });",
+                  "} else {",
+                  "    pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{clientId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{clientSecret}}",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8180/realms/{{realm}}/protocol/openid-connect/token",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8180",
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Get JWT access token using Client Credentials flow (service-to-service authentication)\n\n**Grant Type**: client_credentials\n\nNote: This flow does not have user context, so token will not include user roles."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Endpoints",
+      "item": [
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "console.log('DEBUG: accessToken variable value:', token);",
+                  "console.log('DEBUG: accessToken type:', typeof token);",
+                  "console.log('DEBUG: accessToken length:', token ? token.length : 'null');",
+                  "if (!token || token.length === 0) {",
+                  "    console.warn('⚠ WARNING: No access token found!');",
+                  "    console.warn('Please run \"Get Access Token (Password Grant)\" request first');",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "} else {",
+                  "    console.log('✓ Using access token: ' + token.substring(0, 20) + '...');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('✓ Response time is under 2000ms', function () { pm.expect(pm.response.responseTime).to.be.below(2000); });",
+                  "pm.test('✓ Response is JSON array', function () { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('✓ Response has Content-Type header', function () { pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Get all users (requires ADMIN role)\n\n**Authentication**: JWT Bearer token\n**Required Role**: ADMIN"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "} else {",
+                  "    pm.variables.set('userId', '1');",
+                  "    console.log('✓ Using access token for request');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('✓ Response time is under 2000ms', function () { pm.expect(pm.response.responseTime).to.be.below(2000); });",
+                  "pm.test('✓ Response body parses as JSON', function () { pm.response.to.be.json; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/users/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Get a specific user by ID (requires ADMIN role)\n\n**Authentication**: JWT Bearer token\n**Required Role**: ADMIN\n**Path Variables**:\n- userId: User ID to retrieve"
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "}",
+                  "pm.variables.set('uniqueEmail', 'user_' + Date.now() + '@example.com');",
+                  "pm.variables.set('uniqueUsername', 'user_' + Date.now());"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Status is 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.test('✓ Response is JSON', function () { pm.response.to.be.json; });",
+                  "if (pm.response.text()) {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('✓ Created user has an id', function () { pm.expect(json.id).to.not.be.undefined; });",
+                  "    pm.test('✓ Returns submitted username', function () { pm.expect(json.username).to.eql(pm.variables.get('uniqueUsername')); });",
+                  "    pm.test('✓ Returns submitted email', function () { pm.expect(json.email).to.eql(pm.variables.get('uniqueEmail')); });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"{{uniqueUsername}}\",\r\n    \"email\": \"{{uniqueEmail}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Create a new user (requires ADMIN role)\n\n**Authentication**: JWT Bearer token\n**Required Role**: ADMIN\n**Content-Type**: application/json"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User (Full)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "}",
+                  "pm.variables.set('userId', '2');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Status code is 204 No Content', function () { pm.response.to.have.status(204); });",
+                  "pm.test('✓ Response time is under 5000ms', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"updated_user\",\r\n    \"email\": \"updated@example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Update entire user (full replacement - requires ADMIN role)\n\n**Authentication**: JWT Bearer token\n**Required Role**: ADMIN\n**Path Variables**:\n- userId: User ID to update"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User (Partial)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "}",
+                  "pm.variables.set('userId', '1');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Status code is 204 No Content', function () { pm.response.to.have.status(204); });",
+                  "pm.test('✓ Response time is under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"newemail@example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Update partial user fields (requires ADMIN role)\n\n**Authentication**: JWT Bearer token\n**Required Role**: ADMIN\n**Path Variables**:\n- userId: User ID to update\n**Note**: Only provided fields will be updated"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "} else {",
+                  "    // Create a user first to delete",
+                  "    pm.sendRequest({",
+                  "        url: pm.variables.get('baseUrl') + '/users',",
+                  "        method: 'POST',",
+                  "        header: {",
+                  "            'Content-Type': 'application/json',",
+                  "            'Authorization': 'Bearer ' + token",
+                  "        },",
+                  "        body: {",
+                  "            mode: 'raw',",
+                  "            raw: JSON.stringify({",
+                  "                username: 'user_to_delete_' + Date.now(),",
+                  "                email: 'delete_' + Date.now() + '@example.com'",
+                  "            })",
+                  "        }",
+                  "    }, function (err, res) {",
+                  "        if (res && res.code === 201) {",
+                  "            const json = res.json();",
+                  "            pm.variables.set('deleteUserId', json.id);",
+                  "            console.log('✓ Created user with ID: ' + json.id + ' for deletion test');",
+                  "        }",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Status code is 204 No Content', function () { pm.response.to.have.status(204); });",
+                  "pm.test('✓ Response time is under 2000ms', function () { pm.expect(pm.response.responseTime).to.be.below(2000); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/users/{{deleteUserId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{deleteUserId}}"
+              ]
+            },
+            "description": "Delete a user (requires ADMIN role)\n\n**Authentication**: JWT Bearer token\n**Required Role**: ADMIN\n**Path Variables**:\n- deleteUserId: User ID to delete\n**Note**: A test user is automatically created for deletion in pre-request"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Users",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "}",
+                  "pm.variables.set('searchName', 'alice');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('✓ Response time is under 2000ms', function () { pm.expect(pm.response.responseTime).to.be.below(2000); });",
+                  "pm.test('✓ Response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('✓ Response is an array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/users/search?name={{searchName}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "{{searchName}}"
+                }
+              ]
+            },
+            "description": "Search users by name (requires ADMIN role)\n\n**Authentication**: JWT Bearer token\n**Required Role**: ADMIN\n**Query Parameters**:\n- name: Search term for username"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Users with Sorting",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "}",
+                  "pm.variables.set('searchName', 'alice');",
+                  "pm.variables.set('sortBy', 'email');",
+                  "pm.variables.set('direction', 'desc');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('✓ Response time is under 2000ms', function () { pm.expect(pm.response.responseTime).to.be.below(2000); });",
+                  "pm.test('✓ Response is JSON array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/users/search?name={{searchName}}&sortBy={{sortBy}}&direction={{direction}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "{{searchName}}"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "{{sortBy}}"
+                },
+                {
+                  "key": "direction",
+                  "value": "{{direction}}"
+                }
+              ]
+            },
+            "description": "Search users with sorting options (requires ADMIN role)\n\n**Authentication**: JWT Bearer token\n**Required Role**: ADMIN\n**Query Parameters**:\n- name: Search term\n- sortBy: Field to sort by (e.g., 'email', 'username')\n- direction: Sort direction ('asc' or 'desc')"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Handling",
+      "item": [
+        {
+          "name": "Invalid User ID Type",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Invalid type in path returns 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('✓ Error message is meaningful', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.message).to.include('invalid');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/users/abc",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "abc"
+              ]
+            },
+            "description": "Test error handling with invalid user ID type (requires valid JWT token)\n\n**Expected**: 400 Bad Request"
+          },
+          "response": []
+        },
+        {
+          "name": "Non-existent Endpoint",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Non-existent endpoint returns 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('✓ Error response has status field', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/wrongpath",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "wrongpath"
+              ]
+            },
+            "description": "Test 404 error with non-existent endpoint (requires valid JWT token)\n\n**Expected**: 404 Not Found"
+          },
+          "response": []
+        },
+        {
+          "name": "Missing Authorization Header",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Missing auth returns 401 Unauthorized', function () { pm.response.to.have.status(401); });",
+                  "pm.test('✓ Error message indicates missing authentication', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.message || json.error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Test 401 error when Authorization header is missing\n\n**Expected**: 401 Unauthorized\n**Note**: This request intentionally has no Authorization header"
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid JWT Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Invalid JWT returns 401 Unauthorized', function () { pm.response.to.have.status(401); });",
+                  "pm.test('✓ Response indicates JWT validation failure', function () {",
+                  "    const responseText = pm.response.text();",
+                  "    pm.expect(responseText).to.include.any.of(['invalid', 'JWT', 'token', 'Unauthorized']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid.jwt.token",
+                "description": "Invalid JWT token for testing",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Test 401 error with invalid JWT token\n\n**Expected**: 401 Unauthorized\n**Note**: Using a malformed JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Malformed JSON",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('accessToken');",
+                  "if (!token || token.length === 0) {",
+                  "    pm.test('✗ Access token must be set', function () { pm.expect(token).to.exist; });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✓ Malformed JSON returns 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('✓ Error message mentions malformed JSON', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.message || json.error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT Bearer token for authentication",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ bad json }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Test 400 error with malformed JSON payload (requires valid JWT token)\n\n**Expected**: 400 Bad Request"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Actuator Endpoints",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time is less than 1000ms', function () { pm.expect(pm.response.responseTime).to.be.below(1000); });",
+                  "pm.test('Health status is UP', function () { pm.expect(pm.response.json().status).to.eql('UP'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Application Info",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is JSON object', function () { pm.expect(pm.response.json()).to.be.an('object'); });",
+                  "pm.test('Info returns app details', function () { pm.expect(Object.keys(pm.response.json()).length).to.be.above(0); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/info",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "info"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Metrics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Metrics contains names array', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('names');",
+                  "    pm.expect(json.names).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/metrics",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "metrics"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "HTTP Server Requests Metric",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Metric has required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('name', 'http.server.requests');",
+                  "    pm.expect(json.measurements).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/actuator/metrics/http.server.requests",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "actuator",
+                "metrics",
+                "http.server.requests"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "keycloakUrl",
+      "value": "http://localhost:8180"
+    },
+    {
+      "key": "realm",
+      "value": "userapi-realm"
+    },
+    {
+      "key": "clientId",
+      "value": "userapi-client"
+    },
+    {
+      "key": "clientSecret",
+      "value": "US9FWPsmElIYJHwHSQOHh9GRQm1yqXAw"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "tokenType",
+      "value": ""
+    },
+    {
+      "key": "expiresIn",
+      "value": ""
+    }
+  ]
+}

@@ -22,10 +22,10 @@ spring:
       mode: always
 
   security:
-    user:
-      name: ${SECURITY_USER_NAME}
-      password: ${SECURITY_USER_PASSWORD}
-      roles: ADMIN
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI}
 
 # actuator
 management:
