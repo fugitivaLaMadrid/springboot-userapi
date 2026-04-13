@@ -69,8 +69,36 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder(Environment env) {
         String issuerUri = env.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri");
+        // Check if running in test profile
+        boolean isTestProfile = false;
+        String[] activeProfiles = env.getActiveProfiles();
+        if (activeProfiles != null) {
+            isTestProfile = java.util.Arrays.stream(activeProfiles)
+                    .anyMatch(profile -> profile.equals("test"));
+        }
+        
         if (issuerUri == null || issuerUri.isEmpty()) {
-            // For tests, provide a default issuer URI
+            // For tests or when no issuer is configured, use JWK set URI to avoid network calls
+            issuerUri = "http://localhost:8180/realms/userapi-realm";
+            return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
+        }
+        
+        if (isTestProfile) {
+            // For test profile with configured issuer, use JWK set URI to avoid network calls
+            return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
+        }
+        // For production, use issuer location to enforce issuer validation
+        return NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
+    }
+
+    /**
+     * Creates a JwtDecoder for testing purposes that doesn't require network connectivity.
+     * This method is used by unit tests to verify JWT decoder creation without connecting to Keycloak.
+     * @param issuerUri the issuer URI to use
+     * @return a JwtDecoder bean for testing
+     */
+    public JwtDecoder createTestJwtDecoder(String issuerUri) {
+        if (issuerUri == null || issuerUri.isEmpty()) {
             issuerUri = "http://localhost:8180/realms/userapi-realm";
         }
         return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
