@@ -99,7 +99,7 @@ public class SecurityConfig {
      */
     public JwtDecoder createTestJwtDecoder(String issuerUri) {
         if (issuerUri == null || issuerUri.isEmpty()) {
-            issuerUri = "http://localhost:8180/realms/userapi-realm";
+            issuerUri = "http://keycloak:8080/realms/userapi-realm";
         }
         return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
     }
