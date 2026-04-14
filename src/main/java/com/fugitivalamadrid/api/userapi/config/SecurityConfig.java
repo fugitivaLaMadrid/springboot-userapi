@@ -2,6 +2,7 @@ package com.fugitivalamadrid.api.userapi.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,6 +14,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 @Configuration
 @EnableWebSecurity
+@Profile("!test")
 public class SecurityConfig {
 
     private static final String USERS_ENDPOINT = "/users/**";
@@ -77,18 +79,33 @@ public class SecurityConfig {
                     .anyMatch(profile -> profile.equals("test"));
         }
         
+        System.out.println("=== SecurityConfig jwtDecoder Debug ===");
+        System.out.println("Active Profiles: " + java.util.Arrays.toString(activeProfiles));
+        System.out.println("Is Test Profile: " + isTestProfile);
+        System.out.println("Issuer URI from env: " + issuerUri);
+        
         if (issuerUri == null || issuerUri.isEmpty()) {
             // For tests or when no issuer is configured, use JWK set URI to avoid network calls
             issuerUri = "http://localhost:8180/realms/userapi-realm";
-            return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
+            System.out.println("Using fallback issuer URI: " + issuerUri);
+            System.out.println("Creating JWK Set URI decoder for: " + issuerUri + "/protocol/openid-connect/certs");
+            JwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
+            System.out.println("=== End SecurityConfig jwtDecoder Debug ===");
+            return decoder;
         }
         
         if (isTestProfile) {
             // For test profile with configured issuer, use JWK set URI to avoid network calls
-            return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
+            System.out.println("Test profile detected, using JWK Set URI decoder");
+            JwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
+            System.out.println("=== End SecurityConfig jwtDecoder Debug ===");
+            return decoder;
         }
         // For production, use issuer location to enforce issuer validation
-        return NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
+        System.out.println("Production mode, using issuer location decoder");
+        JwtDecoder decoder = NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
+        System.out.println("=== End SecurityConfig jwtDecoder Debug ===");
+        return decoder;
     }
 
     /**
@@ -99,7 +116,7 @@ public class SecurityConfig {
      */
     public JwtDecoder createTestJwtDecoder(String issuerUri) {
         if (issuerUri == null || issuerUri.isEmpty()) {
-            issuerUri = "http://localhost:8180/realms/userapi-realm";
+            issuerUri ="http://keycloak:8080/realms/userapi-realm";
         }
         return NimbusJwtDecoder.withJwkSetUri(issuerUri + "/protocol/openid-connect/certs").build();
     }

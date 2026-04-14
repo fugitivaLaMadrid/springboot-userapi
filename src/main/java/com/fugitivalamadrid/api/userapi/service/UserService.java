@@ -11,14 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 @Service
 @Transactional
@@ -28,27 +27,26 @@ public class UserService {
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
     private final UserMapper userMapper;
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("username", "email", "createdAt");
 
-    public UserService(UserRepository userRepository, AuditLogService auditLogService,  UserMapper userMapper) {
+    public UserService(UserRepository userRepository, AuditLogService auditLogService, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.auditLogService = auditLogService;
         this.userMapper = userMapper;
-
     }
 
     /**
-     * Returns a list of all users.
-     * @return a list of all users
+     * Returns a paginated list of all users.
+     *
+     * @param pageable pagination parameters
+     * @return paginated list of users
      */
-    @Cacheable("users")
+    @Cacheable(value = "users", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers() {
-        log.info("Fetching all users from database");
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::toResponse)
-                .toList();
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        log.info("Fetching users from database with pagination: page={}, size={}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return userRepository.findAll(pageable)
+                .map(userMapper::toResponse);
     }
 
     /**
@@ -133,38 +131,21 @@ public class UserService {
         if (request.getEmail() != null) user.setEmail(request.getEmail());
         userRepository.save(user);
         auditLogService.logPartialUpdated(id);
-
         log.info("User partially updated with id: {}", id);
     }
 
     /**
-     * Searches users by username with optional sorting.
+     * Searches users by username with pagination and sorting.
+     *
      * @param name the username to search for
-     * @param sortBy field to sort by (username or email)
-     * @param direction asc or desc
-     * @return list of matching users
+     * @param pageable pagination and sorting parameters
+     * @return paginated list of matching users
      */
     @Transactional(readOnly = true)
-    public List<UserResponse> searchUsers(String name, String sortBy, String direction) {
-        log.info("Searching users with name: {}, sortBy: {}, direction: {}", name, sortBy, direction);
-        validateSortParameters(sortBy, direction);
-        Sort sort = direction.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        return userRepository.findByUsernameContainingIgnoreCase(name, sort)
-                .stream()
-                .map(userMapper::toResponse)
-                .toList();
-    }
-
-    private void validateSortParameters(String sortBy, String direction) {
-        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
-            throw new IllegalArgumentException("Invalid sortBy value. Allowed values: username, email, createdAt");
-        }
-        String normalizedDirection = direction.toLowerCase(Locale.ROOT);
-        if (!normalizedDirection.equals("asc") && !normalizedDirection.equals("desc")) {
-            throw new IllegalArgumentException("Invalid direction value. Allowed values: asc, desc");
-        }
+    public Page<UserResponse> searchUsers(String name, Pageable pageable) {
+        log.info("Searching users with name: {}, page={}, size={}",
+                name, pageable.getPageNumber(), pageable.getPageSize());
+        return userRepository.findByUsernameContainingIgnoreCase(name, pageable)
+                .map(userMapper::toResponse);
     }
 }

@@ -13,6 +13,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -64,26 +67,32 @@ import static org.mockito.Mockito.*;
     // ── getAllUsers ───────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("Get all users should return empty list when no users exist")
-    void getAllUsers_returnsEmptyList_whenNoUsers() {
-        // ARRANGE — tell the mock repository to return an empty list
-        when(userRepository.findAll()).thenReturn(List.of());
+    @DisplayName("Get all users should return empty page when no users exist")
+    void getAllUsers_returnsEmptyPage_whenNoUsers() {
+        // ARRANGE — tell the mock repository to return an empty page
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> emptyPage = Page.empty(pageable);
+        when(userRepository.findAll(pageable)).thenReturn(emptyPage);
 
         // ACT — call the real service method
-        List<UserResponse> result = userService.getAllUsers();
+        Page<UserResponse> result = userService.getAllUsers(pageable);
 
         // ASSERT — verify the result
-        assertThat(result).isEmpty();
-        verify(userRepository, times(1)).findAll();
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
+        verify(userRepository, times(1)).findAll(pageable);
     }
 
     @Test
-    @DisplayName("Get all users should return mapped responses when users exist")
-    void getAllUsers_returnsMappedResponses_whenUsersExist() {
+    @DisplayName("Get all users should return mapped page when users exist")
+    void getAllUsers_returnsMappedPage_whenUsersExist() {
         // ARRANGE
         User alice = buildUser(1L, "alice", "alice@example.com");
         User bob = buildUser(2L, "bob", "bob@example.com");
-        when(userRepository.findAll()).thenReturn(List.of(alice, bob));
+        List<User> users = List.of(alice, bob);
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> userPage = new org.springframework.data.domain.PageImpl<>(users, pageable, 2);
+        when(userRepository.findAll(pageable)).thenReturn(userPage);
 
         UserResponse aliceResponse = UserResponse.builder()
                 .id(1L)
@@ -101,14 +110,14 @@ import static org.mockito.Mockito.*;
         when(userMapper.toResponse(bob)).thenReturn(bobResponse);
 
         // ACT
-        List<UserResponse> result = userService.getAllUsers();
+        Page<UserResponse> result = userService.getAllUsers(pageable);
 
         // ASSERT
-        assertThat(result).isNotNull().hasSize(2);
-        assertThat(result.get(0)).isNotNull();
-        assertThat(result.get(0).getUsername()).isEqualTo("alice");
-        assertThat(result.get(1)).isNotNull();
-        assertThat(result.get(1).getUsername()).isEqualTo("bob");
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getContent().get(0).getUsername()).isEqualTo("alice");
+        assertThat(result.getContent().get(1).getUsername()).isEqualTo("bob");
     }
 
     // ── getUserById ──────────────────────────────────────────────────────────
@@ -313,9 +322,13 @@ import static org.mockito.Mockito.*;
     }
 
     @Test
-    @DisplayName("Search users should use repository filtering and return mapped results")
-    void searchUsers_returnsMappedResults() {
+    @DisplayName("Search users should use repository filtering and return mapped page")
+    void searchUsers_returnsMappedPage() {
         User alice = buildUser(1L, "alice", "alice@example.com");
+        List<User> users = List.of(alice);
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("username").ascending());
+        Page<User> userPage = new org.springframework.data.domain.PageImpl<>(users, pageable, 1);
+        
         UserResponse aliceResponse = UserResponse.builder()
                 .id(1L)
                 .username("alice")
@@ -323,26 +336,33 @@ import static org.mockito.Mockito.*;
                 .createdAt(alice.getCreatedAt())
                 .build();
 
-        when(userRepository.findByUsernameContainingIgnoreCase(eq("ali"), any(Sort.class)))
-                .thenReturn(List.of(alice));
+        when(userRepository.findByUsernameContainingIgnoreCase(eq("ali"), any(Pageable.class)))
+                .thenReturn(userPage);
         when(userMapper.toResponse(alice)).thenReturn(aliceResponse);
 
-        List<UserResponse> result = userService.searchUsers("ali", "username", "asc");
+        Page<UserResponse> result = userService.searchUsers("ali", pageable);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getUsername()).isEqualTo("alice");
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getUsername()).isEqualTo("alice");
         verify(userRepository, times(1))
-                .findByUsernameContainingIgnoreCase(eq("ali"), any(Sort.class));
+                .findByUsernameContainingIgnoreCase(eq("ali"), any(Pageable.class));
     }
 
     @Test
-    @DisplayName("Search users should throw IllegalArgumentException when sort field is invalid")
-    void searchUsers_throwsIllegalArgumentException_whenSortByIsInvalid() {
-        assertThatThrownBy(() -> userService.searchUsers("ali", "id", "asc"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid sortBy value");
+    @DisplayName("Search users should return empty page when no matches found")
+    void searchUsers_returnsEmptyPage_whenNoMatches() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> emptyPage = Page.empty(pageable);
+        
+        when(userRepository.findByUsernameContainingIgnoreCase(eq("xyz"), any(Pageable.class)))
+                .thenReturn(emptyPage);
 
-        verify(userRepository, never())
-                .findByUsernameContainingIgnoreCase(anyString(), any(Sort.class));
+        Page<UserResponse> result = userService.searchUsers("xyz", pageable);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
+        verify(userRepository, times(1))
+                .findByUsernameContainingIgnoreCase(eq("xyz"), any(Pageable.class));
     }
 } 
