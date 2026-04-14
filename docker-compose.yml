@@ -23,6 +23,8 @@ services:
     ports:
       - "8180:8080"
     command: start-dev
+    volumes:
+      - userapi_keycloak_data:/opt/keycloak/data
     restart: unless-stopped
 
   userapi:
@@ -65,3 +67,4 @@ volumes:
   userapi_sonarqube_logs:
   userapi_sonarqube_extensions:
   userapi_sonarqube_temp:
+  userapi_keycloak_data:
