@@ -25,6 +25,9 @@ public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "UserService is a Spring-managed bean")
     public UserController(UserService userService) {
         this.userService = userService;
     }

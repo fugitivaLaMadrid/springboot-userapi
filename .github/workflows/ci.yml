@@ -29,8 +29,20 @@ jobs:
       - name: Build
         run: mvn compile
 
-      - name: Test
-        run: mvn test
+      - name: Test with coverage
+        run: mvn clean test jacoco:report
+
+      - name: Check test coverage
+        run: |
+          COVERAGE=$(mvn jacoco:report | grep -o 'Total.*[0-9]\+%' | grep -o '[0-9]\+')
+          if [ "$COVERAGE" -lt 80 ]; then
+            echo "❌ Coverage below 80%: ${COVERAGE}%"
+            exit 1
+          fi
+          echo "✅ Coverage: ${COVERAGE}%"
+
+      - name: Run static analysis
+        run: mvn checkstyle:check spotbugs:check
 
       - name: Package
         run: mvn clean package -DskipTests
@@ -61,3 +73,20 @@ jobs:
           name: test-results
           path: target/surefire-reports/
           retention-days: 7
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: target/site/jacoco/
+          retention-days: 7
+
+      - name: SonarQube Scan
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=userapi \
+            -Dsonar.organization=fugitivalamadrid \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

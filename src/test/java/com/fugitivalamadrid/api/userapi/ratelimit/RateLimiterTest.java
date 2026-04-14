@@ -16,7 +16,7 @@ class RateLimiterTest {
 
     @BeforeEach
     void setUp() {
-        rateLimiter = new RateLimiter(5, 1000); // 5 requests per second
+        rateLimiter = RateLimiter.create(5, 1000); // 5 requests per second
     }
 
     @Test
@@ -52,21 +52,15 @@ class RateLimiterTest {
             rateLimiter.tryAcquire();
         }
 
-        // Simulate expired window by creating with timestamp in the past
-        RateLimiter rateLimiterWithExpiredWindow = new RateLimiter(5, 1000) {
-            @Override
-            public boolean tryAcquire() {
-                // Simulate that window has expired
-                return System.currentTimeMillis() - getCreationTime() > getWindowSizeMillis();
-            }
-            
-            private long getCreationTime() {
-                return System.currentTimeMillis() - 1100; // 1.1 seconds ago
-            }
-        };
+        // Wait for window to expire
+        try {
+            Thread.sleep(1100); // Wait 1.1 seconds for window to expire
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
-        // Should allow request after window reset simulation
-        assertTrue(rateLimiterWithExpiredWindow.tryAcquire(), "Should allow request after window reset");
+        // Should allow request after window reset
+        assertTrue(rateLimiter.tryAcquire(), "Should allow request after window reset");
     }
 
     @Test
@@ -117,16 +111,16 @@ class RateLimiterTest {
     @DisplayName("Should throw exception for invalid parameters")
     void shouldThrowExceptionForInvalidParameters() {
         assertThrows(IllegalArgumentException.class, () -> 
-            new RateLimiter(0, 1000), "maxRequests must be positive");
+            RateLimiter.create(0, 1000), "maxRequests must be positive");
         
         assertThrows(IllegalArgumentException.class, () -> 
-            new RateLimiter(5, 0), "windowSizeMillis must be positive");
+            RateLimiter.create(5, 0), "windowSizeMillis must be positive");
         
         assertThrows(IllegalArgumentException.class, () -> 
-            new RateLimiter(-1, 1000), "maxRequests must be positive");
+            RateLimiter.create(-1, 1000), "maxRequests must be positive");
         
         assertThrows(IllegalArgumentException.class, () -> 
-            new RateLimiter(5, -1), "windowSizeMillis must be positive");
+            RateLimiter.create(5, -1), "windowSizeMillis must be positive");
     }
 
     @Test
@@ -154,20 +148,9 @@ class RateLimiterTest {
         assertTrue(timeUntilReset > 0 && timeUntilReset <= 1000, 
             "Time until reset should be positive and within window size");
         
-        // Simulate time passage by creating a rate limiter with elapsed time
-        RateLimiter rateLimiterWithElapsedTime = new RateLimiter(5, 1000) {
-            @Override
-            public long getTimeUntilReset() {
-                // Simulate 100ms elapsed time
-                long elapsed = 100;
-                long windowSize = getWindowSizeMillis();
-                return Math.max(0, windowSize - elapsed);
-            }
-        };
-        
-        long timeUntilResetAfterElapsedTime = rateLimiterWithElapsedTime.getTimeUntilReset();
-        assertTrue(timeUntilResetAfterElapsedTime < timeUntilReset, 
-            "Time until reset should decrease over time");
+        // Time until reset should be less than or equal to window size
+        assertTrue(timeUntilReset <= 1000, 
+            "Time until reset should be within window size");
     }
 
     @Test

@@ -87,6 +87,6 @@ public class RateLimitAspect {
      */
     private RateLimiter getOrCreateRateLimiter(String key, RateLimit rateLimit) {
         return rateLimiters.computeIfAbsent(key, k -> 
-            new RateLimiter(rateLimit.maxRequests(), rateLimit.windowSizeMillis()));
+            RateLimiter.create(rateLimit.maxRequests(), rateLimit.windowSizeMillis()));
     }
 }
