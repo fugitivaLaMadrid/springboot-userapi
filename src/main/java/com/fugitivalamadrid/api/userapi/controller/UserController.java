@@ -6,11 +6,15 @@ import com.fugitivalamadrid.api.userapi.dto.UserResponse;
 import com.fugitivalamadrid.api.userapi.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import com.fugitivalamadrid.api.userapi.ratelimit.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
@@ -26,15 +30,24 @@ public class UserController {
     }
 
     /**
-     * Returns a list of all users.
-     * @return a list of all users
+     * Returns a paginated list of all users.
+     * Supports pagination, sorting, and filtering.
+     *
+     * @param pageable pagination parameters (page, size, sort)
+     * @return a paginated list of users
      */
-    @Operation(summary = "Get all users")
+    @Operation(summary = "Get all users with pagination",
+            description = "Retrieve users with pagination support. Default page size is 20. " +
+                    "Example: /users?page=0&size=10&sort=username,asc")
     @RateLimit
     @GetMapping
-    public List<UserResponse> getAllUsers() {
-        log.info("GET /users - fetching all users");
-        return userService.getAllUsers();
+    public Page<UserResponse> getAllUsers(
+            @Parameter(description = "Pagination parameters (page number, size, sort)",
+                    example = "page=0&size=20&sort=username,asc")
+            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        log.info("GET /users - fetching users with pagination: page={}, size={}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return userService.getAllUsers(pageable);
     }
 
     /**
@@ -102,18 +115,24 @@ public class UserController {
     }
 
     /**
-     * Searches users by username with optional sorting.
+     * Searches users by username with optional sorting and pagination.
+     *
      * @param name the username to search for
-     * @param sortBy field to sort by (default: username)
-     * @param direction sort direction asc or desc (default: asc)
-     * @return list of matching users
+     * @param pageable pagination parameters (page, size, sort)
+     * @return paginated list of matching users
      */
-    @Operation(summary = "Search users by username")
+    @Operation(summary = "Search users by username with pagination",
+            description = "Search users with pagination support. Default page size is 20. " +
+                    "Example: /users/search?name=alice&page=0&size=10&sort=email,desc")
     @GetMapping("/search")
-    public List<UserResponse> searchUsers(
+    public Page<UserResponse> searchUsers(
+            @Parameter(description = "Username search term", required = true)
             @RequestParam String name,
-            @RequestParam(defaultValue = "username") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction) {
-        return userService.searchUsers(name, sortBy, direction);
+            @Parameter(description = "Pagination parameters (page number, size, sort)",
+                    example = "page=0&size=20&sort=username,asc")
+            @PageableDefault(size = 20, sort = "username") Pageable pageable) {
+        log.info("GET /users/search - searching users with name: {}, page={}, size={}",
+                name, pageable.getPageNumber(), pageable.getPageSize());
+        return userService.searchUsers(name, pageable);
     }
 }

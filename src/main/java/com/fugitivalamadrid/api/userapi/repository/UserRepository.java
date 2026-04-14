@@ -1,12 +1,17 @@
 package com.fugitivalamadrid.api.userapi.repository;
 
 import com.fugitivalamadrid.api.userapi.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.domain.Sort;
-
-import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    //because we extends JpaRepository we can get, update,find, save, delete all users
-    List<User> findByUsernameContainingIgnoreCase(String username, Sort sort);
+    /**
+     * Find users by username containing the given string (case-insensitive) with pagination.
+     *
+     * @param username the username search term
+     * @param pageable pagination and sorting parameters
+     * @return paginated list of matching users
+     */
+    Page<User> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
 }
