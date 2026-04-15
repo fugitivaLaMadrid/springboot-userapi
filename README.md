@@ -65,6 +65,44 @@ mvn test
 ```
 This runs tests using the H2 in-memory database via the `test` Spring profile, which is activated automatically by `@ActiveProfiles("test")` in the test classes.
 
+## Local Development Workflow
+
+Complete workflow for local development before running the application:
+
+### 1. Run Tests
+Ensure all tests pass before building:
+```bash
+mvn test
+```
+
+### 2. Run Code Quality Analysis & Build
+
+> **⚠️ Warning:** SonarQube Docker container must be running! Start it first if not already running:
+> ```bash
+> # First time only (or after docker compose down)
+> docker compose up -d sonarqube
+> ```
+
+Run SonarQube analysis and build the application:
+```bash
+.scripts\sonar.bat
+```
+
+> **Note:** This runs `mvn clean verify` which compiles, tests, and packages the application.
+
+### 3. Run Locally
+Choose one of the following options:
+
+**Option A: Via Docker Compose (with all infrastructure):**
+```bash
+docker compose up --build
+```
+
+**Option B: Via Command Line (infrastructure must be running):**
+```bash
+mvnw spring-boot:run
+```
+
 ## Services (Docker Compose)
 1. **PostgreSQL**
     - Service name: `userapi_postgres`
