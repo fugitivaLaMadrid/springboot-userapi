@@ -1,6 +1,5 @@
 package com.fugitivalamadrid.api.userapi.ratelimit;
 
-import lombok.Getter;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -8,7 +7,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * Simple rate limiter using AtomicInteger and synchronized to simulate production constraints.
  * Uses a sliding window approach with atomic operations for thread safety.
  */
-@Getter
 public class RateLimiter {
     private final int maxRequests;
     private final long windowSizeMillis;
@@ -22,14 +20,26 @@ public class RateLimiter {
      * @param maxRequests maximum number of requests allowed in the time window
      * @param windowSizeMillis size of the time window in milliseconds
      */
-    public RateLimiter(int maxRequests, long windowSizeMillis) {
-        if (maxRequests <= 0 || windowSizeMillis <= 0) {
-            throw new IllegalArgumentException("maxRequests and windowSizeMillis must be positive");
-        }
+    private RateLimiter(int maxRequests, long windowSizeMillis) {
         this.maxRequests = maxRequests;
         this.windowSizeMillis = windowSizeMillis;
         this.requestCount = new AtomicInteger(0);
         this.windowStart = new AtomicLong(System.currentTimeMillis());
+    }
+
+    /**
+     * Factory method to create a new rate limiter with validation.
+     *
+     * @param maxRequests maximum number of requests allowed in the time window
+     * @param windowSizeMillis size of the time window in milliseconds
+     * @return a new RateLimiter instance
+     * @throws IllegalArgumentException if parameters are invalid
+     */
+    public static RateLimiter create(int maxRequests, long windowSizeMillis) {
+        if (maxRequests <= 0 || windowSizeMillis <= 0) {
+            throw new IllegalArgumentException("maxRequests and windowSizeMillis must be positive");
+        }
+        return new RateLimiter(maxRequests, windowSizeMillis);
     }
 
     /**
@@ -94,5 +104,21 @@ public class RateLimiter {
         long windowStartTime = windowStart.get();
         long windowEnd = windowStartTime + windowSizeMillis;
         return Math.max(0, windowEnd - currentTime);
+    }
+
+    public int getMaxRequests() {
+        return maxRequests;
+    }
+
+    public long getWindowSizeMillis() {
+        return windowSizeMillis;
+    }
+
+    public int getRequestCount() {
+        return requestCount.get();
+    }
+
+    public long getWindowStart() {
+        return windowStart.get();
     }
 }

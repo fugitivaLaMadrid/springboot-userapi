@@ -16,7 +16,7 @@ import com.fugitivalamadrid.api.userapi.ratelimit.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
+
 
 @Tag(name = "Users", description = "User management endpoints")
 @RestController
@@ -25,6 +25,9 @@ public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "UserService is a Spring-managed bean")
     public UserController(UserService userService) {
         this.userService = userService;
     }

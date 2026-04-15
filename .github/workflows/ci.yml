@@ -29,8 +29,11 @@ jobs:
       - name: Build
         run: mvn compile
 
-      - name: Test
-        run: mvn test
+      - name: Test with coverage
+        run: mvn clean verify
+
+      - name: Run static analysis
+        run: mvn checkstyle:check spotbugs:check
 
       - name: Package
         run: mvn clean package -DskipTests
@@ -60,4 +63,11 @@ jobs:
         with:
           name: test-results
           path: target/surefire-reports/
+          retention-days: 7
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: target/site/jacoco/
           retention-days: 7
