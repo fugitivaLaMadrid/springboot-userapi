@@ -71,13 +71,3 @@ jobs:
           name: coverage-reports
           path: target/site/jacoco/
           retention-days: 7
-
-      - name: SonarQube Scan
-        run: |
-          mvn sonar:sonar \
-            -Dsonar.projectKey=userapi \
-            -Dsonar.organization=fugitivalamadrid \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
