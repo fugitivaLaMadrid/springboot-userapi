@@ -67,16 +67,16 @@ This runs tests using the H2 in-memory database via the `test` Spring profile, w
 
 ## Services (Docker Compose)
 1. **PostgreSQL**
-   - Service name: `userapi_postgres`
+    - Service name: `userapi_postgres`
 2. **Spring Boot application**
-   - Service name: `userapi_app`
-   - URL: `http://localhost:8080`
+    - Service name: `userapi_app`
+    - URL: `http://localhost:8080`
 3. **Adminer** (Database UI)
-   - Service name: `userapi_adminer`
-   - URL: `http://localhost:8081`
+    - Service name: `userapi_adminer`
+    - URL: `http://localhost:8081`
 4. **SonarQube** (Code quality)
-   - Service name: `userapi_sonarqube`
-   - URL: `http://localhost:9000`
+    - Service name: `userapi_sonarqube`
+    - URL: `http://localhost:9000`
 
 ## Database connection
 
@@ -108,11 +108,11 @@ Example pipeline stages:
 - package
 - docker_build
 - Artifacts:
-  - `.jar` in `target/`
+    - `.jar` in `target/`
 - The pipeline can be extended to publish container images to:
-  - GitLab Container Registry
-  - Docker Hub
-  - Nexus
+    - GitLab Container Registry
+    - Docker Hub
+    - Nexus
 
 ## AI Workflow
 This project includes an `.ai` folder that defines **AI-assisted development workflows.**
@@ -137,6 +137,101 @@ Then run the analysis (Windows):
 ```
 
 > **Note:** The script reads `SONAR_TOKEN` from `.env.local` and runs the analysis using the `localProfile` Maven profile.
+
+## Detailed Setup Instructions
+
+### 1. Start Infrastructure Services
+
+First, start all required services with Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+### 2. Configure Keycloak
+
+Access Keycloak Admin Console:
+```
+http://localhost:8180/realms/master/protocol/openid-connect/auth?client_id=security-admin-console&redirect_uri=http%3A%2F%2Flocalhost%3A8180%2Fadmin%2Fmaster%2Fconsole%2F%23%2Fuserapi-realm%2Frealms&state=15425c2e-2801-4a5f-bab2-92d979974f10&response_mode=query&response_type=code&scope=openid&nonce=4cafbdda-9105-4fb8-ab33-0bb09114ad72&code_challenge=XBM0NqY6G1TO4hoG-fwxDfFgbAC2rG_08e-ZQBL8Wok&code_challenge_method=S256
+```
+
+Run the setup script to create the realm:
+```powershell
+powershell -ExecutionPolicy Bypass -File .scripts\setup-keycloak.ps1
+```
+
+**Activate the realm:**
+1. Go to **Manage Realm** → Search for `userapi-realm`
+2. Click on it to activate (blue turns to grey when activated)
+
+### 3. Configure SonarQube
+
+Access SonarQube:
+```
+http://localhost:9000/sessions/new?return_to=%2F
+```
+
+**Initial setup:**
+1. Update the default password
+2. Generate a token:
+    - Go to http://localhost:9000/account/security
+    - Add:
+        - **Name:** user-api-maven
+        - **Type:** User token
+        - **Expires:** No expiration
+3. Copy the token to your `.env` and `.env.local` files
+
+### 4. Configure Database
+
+Access Adminer:
+```
+http://localhost:8081/?pgsql=postgres&username=user&db=userdb&ns=public&select=users
+```
+
+**Credentials:** Check `.env.local` for `POSTGRES_USER` and `POSTGRES_PASSWORD`
+
+**Create database:**
+- Create a new database named `userdb`
+
+### 5. Running the Application
+
+**Option 1: Via Docker**
+The application is already running when you start Docker Compose (if `userapi_app` service is enabled).
+
+**Option 2: Via Command Line or IntelliJ**
+
+First, stop the application container in Docker:
+```bash
+docker compose stop userapi_app
+```
+
+Then run:
+
+**Development profile:**
+```bash
+mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+**Production profile:**
+```bash
+mvnw spring-boot:run -Dspring-boot.run.profiles=prod
+```
+
+**Default:**
+```bash
+mvnw spring-boot:run
+```
+
+### 6. SonarQube Analysis
+
+Run SonarQube analysis (requires SonarQube Docker to be running):
+```bash
+.scripts\sonar.bat
+```
+
+> **Note:** The script reads `SONAR_TOKEN` from `.env.local` and runs the analysis using the `localProfile` Maven profile.
+
+---
 
 ## Notes and tips
 - Keep **secrets out of Git**: use `.env` or your CI secret store.
