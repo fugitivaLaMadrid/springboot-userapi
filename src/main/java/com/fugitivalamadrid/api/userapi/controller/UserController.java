@@ -16,7 +16,7 @@ import com.fugitivalamadrid.api.userapi.ratelimit.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
+
 
 @Tag(name = "Users", description = "User management endpoints")
 @RestController
