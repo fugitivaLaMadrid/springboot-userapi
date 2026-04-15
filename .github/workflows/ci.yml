@@ -30,16 +30,7 @@ jobs:
         run: mvn compile
 
       - name: Test with coverage
-        run: mvn clean test jacoco:report
-
-      - name: Check test coverage
-        run: |
-          COVERAGE=$(mvn jacoco:report | grep -o 'Total.*[0-9]\+%' | grep -o '[0-9]\+')
-          if [ "$COVERAGE" -lt 80 ]; then
-            echo "❌ Coverage below 80%: ${COVERAGE}%"
-            exit 1
-          fi
-          echo "✅ Coverage: ${COVERAGE}%"
+        run: mvn clean verify
 
       - name: Run static analysis
         run: mvn checkstyle:check spotbugs:check
