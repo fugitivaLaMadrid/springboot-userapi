@@ -77,18 +77,28 @@ mvn test
 
 ### 2. Run Code Quality Analysis & Build
 
+You have two options to build your project:
+
+**Option A: Build with Maven clean verify**
+```bash
+mvn clean verify
+```
+This compiles, tests, and packages the application without code quality analysis.
+
+**Option B: Build and run code quality analysis with SonarQube**
 > **⚠️ Warning:** SonarQube Docker container must be running! Start it first if not already running:
 > ```bash
 > # First time only (or after docker compose down)
 > docker compose up -d sonarqube
 > ```
+> 
+> **Note:** The token must be generated in SonarQube and copied to `.env` or `.env.local`
 
-Run SonarQube analysis and build the application:
+Run the analysis script:
 ```bash
 .scripts\sonar.bat
 ```
-
-> **Note:** This runs `mvn clean verify` which compiles, tests, and packages the application.
+This runs `mvn clean verify` with additional SonarQube code quality analysis.
 
 ### 3. Run Locally
 Choose one of the following options:
