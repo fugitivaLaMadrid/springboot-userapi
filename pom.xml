@@ -291,7 +291,7 @@
             <id>localProfile</id>
             <properties>
                 <sonar.host.url>http://localhost:9000</sonar.host.url>
-                <sonar.projectKey>userapi</sonar.projectKey>
+                <sonar.projectKey>userapi_sonarqube</sonar.projectKey>
                 <sonar.projectName>User API</sonar.projectName>
                 <sonar.coverage.jacoco.xmlReportPaths>
                     target/site/jacoco/jacoco.xml

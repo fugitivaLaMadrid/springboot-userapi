@@ -92,7 +92,7 @@ This compiles, tests, and packages the application without code quality analysis
 > docker compose up -d sonarqube
 > ```
 > 
-> **Note:** The token must be generated in SonarQube and copied to `.env` or `.env.local`
+> **Note:** The token must be generated in SonarQube and copied to `.env.local`
 
 Run the analysis script:
 ```bash
