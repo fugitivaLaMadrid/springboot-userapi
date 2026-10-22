@@ -69,13 +69,83 @@ This runs tests using the H2 in-memory database via the `test` Spring profile, w
 
 Complete workflow for local development before running the application:
 
-### 1. Run Tests
+### 1. Run Locally - First time
+This application uses JWT authentication via Keycloak. **Keycloak must be configured before the application can start successfully.**
+
+```bash
+docker compose up --build
+```
+
+After running the docker compose, the below container are running:
+1. *PostgreSQL*
+Service name: userapi_postgres
+2. Spring Boot application
+Service name: userapi_app
+URL: http://localhost:8080
+3. Adminer (Database UI)
+Service name: userapi_adminer
+URL: http://localhost:8081
+4. SonarQube (Code quality)
+5. Service name: userapi_sonarqube
+URL: http://localhost:9000
+
+The "userapi_app" will failed because for the first time you MUST configure the below:
+1. Stop all the services
+#### Step 1: Start Keycloak
+```bash
+docker compose up -d keycloak
+```
+#### Step 2: Configure Keycloak Realm
+1. Access Keycloak Admin Console at http://localhost:8180/admin/master/console/#/master/realms
+2. Login with credentials:
+    - **Username:** `admin`
+    - **Password:** `admin123` (from `.env` file)
+3. Run the setup script to create the realm and client:
+   ```bash
+   powershell -ExecutionPolicy Bypass -File .scripts\setup-keycloak.ps1
+   ```
+4. Refresh the admin console - you will now see `userapi-realm` listed
+5. **Activate the realm:**
+    - Click on "Manage Realms" in the top-left
+    - Click on `userapi-realm` to activate it (it changes from blue to grey)
+6. **Verify the client:**
+    - Navigate to http://localhost:8180/admin/master/console/#/userapi-realm/clients
+    - Confirm `userapi-client` is displayed
+7. The setup script automatically saves the client secret to `.env` as `KEYCLOAK_CLIENT_SECRET`
+
+#### Step 3: Start the Application
+Now start PostgreSQL and the application:
+```bash
+docker compose up -d postgres userapi
+```
+
+The application will now start successfully since Keycloak is configured and running.
+
+
+
+### 2. Run Locally - After first time setup
+
+Choose one of the following options:
+
+**Option A: Via Docker Compose (with all infrastructure):**
+Start up all the existing containers (Important keycloak MUST be running and active)
+```bash
+docker compose up --build
+```
+
+**Option B: Via Command Line (infrastructure must be running):** 
+Start Up container: userapi_postgres
+```bash
+mvnw spring-boot:run
+```
+
+### 2. Run Tests
 Ensure all tests pass before building:
 ```bash
 mvn test
 ```
 
-### 2. Run Code Quality Analysis & Build
+### 3. Run Code Quality Analysis & Build
 
 You have two options to build your project:
 
@@ -91,7 +161,7 @@ This compiles, tests, and packages the application without code quality analysis
 > # First time only (or after docker compose down)
 > docker compose up -d sonarqube
 > ```
-> 
+>
 > **Note:** The token must be generated in SonarQube and copied to `.env.local`
 
 Run the analysis script:
@@ -100,18 +170,6 @@ Run the analysis script:
 ```
 This runs `mvn clean verify` with additional SonarQube code quality analysis.
 
-### 3. Run Locally
-Choose one of the following options:
-
-**Option A: Via Docker Compose (with all infrastructure):**
-```bash
-docker compose up --build
-```
-
-**Option B: Via Command Line (infrastructure must be running):**
-```bash
-mvnw spring-boot:run
-```
 
 ## Services (Docker Compose)
 1. **PostgreSQL**
@@ -197,20 +255,38 @@ docker compose up -d
 ```
 
 ### 2. Configure Keycloak
-
-Access Keycloak Admin Console:
-```
-http://localhost:8180/realms/master/protocol/openid-connect/auth?client_id=security-admin-console&redirect_uri=http%3A%2F%2Flocalhost%3A8180%2Fadmin%2Fmaster%2Fconsole%2F%23%2Fuserapi-realm%2Frealms&state=15425c2e-2801-4a5f-bab2-92d979974f10&response_mode=query&response_type=code&scope=openid&nonce=4cafbdda-9105-4fb8-ab33-0bb09114ad72&code_challenge=XBM0NqY6G1TO4hoG-fwxDfFgbAC2rG_08e-ZQBL8Wok&code_challenge_method=S256
-```
-
-Run the setup script to create the realm:
-```powershell
-powershell -ExecutionPolicy Bypass -File .scripts\setup-keycloak.ps1
+Only KeyCloak container
+#### Step 1: Start Keycloak
+```bash
+docker compose up -d keycloak
 ```
 
-**Activate the realm:**
-1. Go to **Manage Realm** → Search for `userapi-realm`
-2. Click on it to activate (blue turns to grey when activated)
+#### Step 2: Configure Keycloak Realm
+1. Access Keycloak Admin Console at http://localhost:8180/admin/master/console/#/master/realms
+2. Login with credentials:
+    - **Username:** `admin`
+    - **Password:** `admin123` (from `.env` file)
+3. Run the setup script to create the realm and client:
+   ```bash
+   powershell -ExecutionPolicy Bypass -File .scripts\setup-keycloak.ps1
+   ```
+4. Refresh the admin console - you will now see `userapi-realm` listed
+5. **Activate the realm:**
+    - Click on "Manage Realms" in the top-left
+    - Click on `userapi-realm` to activate it (it changes from blue to grey)
+6. **Verify the client:**
+    - Navigate to http://localhost:8180/admin/master/console/#/userapi-realm/clients
+    - Confirm `userapi-client` is displayed
+7. The setup script automatically saves the client secret to `.env` as `KEYCLOAK_CLIENT_SECRET`
+
+#### Step 3: Start the Application
+Now start PostgreSQL and the application:
+```bash
+docker compose up -d postgres userapi
+```
+
+The application will now start successfully since Keycloak is configured and running.
+
 
 ### 3. Configure SonarQube
 
@@ -281,8 +357,38 @@ Run SonarQube analysis (requires SonarQube Docker to be running):
 
 ---
 
+### 7. Postman
+Open postman collection user-api (JWT/OAuth)
+It has 4 directories:
+1. Auth
+2. User Endpoints
+3. Error Handling
+4. Actuator endpoints
+http://localhost:8080/actuator/health
+5. test_pagination
+
+- Test with postman:
+  - In the main directory "user-api (JWT/OAuth2)" are store the variables,there is one "accesToken" which is empty
+  - Get Access Token (Password Grant)
+     http://localhost:8180/realms/userapi-realm/protocol/openid-connect/token
+  - This would generate the token, the script is postman is ready to copy the token to all endpoint in Headers -->Authoriazion {{accessToken}}
+  - Finally you can test http://localhost:8080/users auth
+
+- **They use the same URL but different OAuth2 grant types:**
+http://localhost:8180/realms/userapi-realm/protocol/openid-connect/token
+  - Password Grant:
+    - Uses grant_type=password 
+    - Requires: username, password, client_id, client_secret 
+    - Authenticates as a user
+  - Client Credentials:
+    - Uses grant_type=client_credentials 
+    - Requires: client_id, client_secret 
+    - Authenticates as the application/client (no user context)
+- Both hit the same Keycloak token endpoint, but the request body parameters differ based on which grant type you're using.
+
 ## Notes and tips
 - Keep **secrets out of Git**: use `.env` or your CI secret store.
 - Use the **test profile with H2** for unit and integration tests.
 - If ports conflict, update the bindings in `docker-compose.yml`.
 - The **Docker + PostgreSQL + Adminer + Actuator** setup makes the project resemble a real enterprise microservice environment.
+
