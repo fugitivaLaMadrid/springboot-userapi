@@ -41,7 +41,7 @@ src/
 - `UserRepository.java` – Spring Data JPA repository for DB access
 
 ## Prerequisites
-- Java 21
+- Java 25
 - Maven 3.9+
 - Docker & Docker Compose
 - Git
