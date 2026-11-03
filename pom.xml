@@ -27,7 +27,7 @@
         <url/>
     </scm>
     <properties>
-        <java.version>17</java.version>
+        <java.version>25</java.version>
     </properties>
     <dependencies>
         <!-- Web -->
@@ -114,7 +114,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-        <!-- OAuth2 Resource Server -->
+        <!-- OAuth2 Resource Server (JWT) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
@@ -129,7 +129,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.8.3</version>
+            <version>4.9.7</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -174,7 +174,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <version>0.8.14</version>
                 <executions>
                     <execution>
                         <goals>
@@ -269,7 +269,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.8.2.0</version>
+                <version>4.9.7.0</version>
                 <configuration>
                     <effort>Max</effort>
                     <threshold>Low</threshold>
