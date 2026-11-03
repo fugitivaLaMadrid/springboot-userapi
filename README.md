@@ -3,9 +3,9 @@
 ## Overview
 Lightweight **Spring Boot service for user management**.
 
-This document explains the project layout, prerequisites, common commands, and how to run the app locally using Docker Compose.
+This document explains the project layout, prerequisites, and how to run the app from scratch.
 
-## Project structure
+## Project Structure
 ```
 src/
 ├─ main/
@@ -37,384 +37,203 @@ src/
 - `application-test.yml` – H2 in-memory configuration for tests
 - `.env` – Environment variables (ignored in Git; contains DB credentials)
 - `Dockerfile` – Container image for the Spring Boot application
-- `docker-compose.yml` – Brings up PostgreSQL, the app, Adminer and SonarQube
+- `docker-compose.yml` – Brings up PostgreSQL, Keycloak, the app, Adminer and SonarQube
 - `UserRepository.java` – Spring Data JPA repository for DB access
 
 ## Prerequisites
-- Java 17+
+- Java 25
 - Maven 3.9+
 - Docker & Docker Compose
 - Git
 
-## Common commands
+---
 
-**Build and run locally:**
+# Quick Start (First-Time Setup)
+
+Follow these steps to run the project from scratch:
+
+## Step 1: Clone and Build
 ```bash
+git clone <repository-url>
+cd userapi
 mvn clean package
-docker compose up --build
 ```
 
-**Stop containers:**
-```bash
-docker compose down
-```
+## Step 2: Configure Keycloak (Required for Authentication)
+This application uses JWT authentication via Keycloak. Keycloak must be configured before the application can start.
 
-**Run tests (local, without Docker):**
-```bash
-mvn test
-```
-This runs tests using the H2 in-memory database via the `test` Spring profile, which is activated automatically by `@ActiveProfiles("test")` in the test classes. The test profile uses a separate `TestSecurityConfig` instead of the production `SecurityConfig` to avoid requiring Keycloak connectivity during tests.
-
-## Local Development Workflow
-
-Complete workflow for local development before running the application:
-
-### 1. Run Locally - First time
-This application uses JWT authentication via Keycloak. **Keycloak must be configured before the application can start successfully.**
-
-```bash
-docker compose up --build
-```
-
-After running the docker compose, the below container are running:
-1. *PostgreSQL*
-Service name: userapi_postgres
-2. Spring Boot application
-Service name: userapi_app
-URL: http://localhost:8080
-3. Adminer (Database UI)
-Service name: userapi_adminer
-URL: http://localhost:8081
-4. SonarQube (Code quality)
-5. Service name: userapi_sonarqube
-URL: http://localhost:9000
-
-The "userapi_app" will failed because for the first time you MUST configure "Keycloak" so, follow the below:
-1. Stop all the containers: userapi_postgres, userapi_sonarqube, userapi_keycloak, userapi_adminer, userapi_app
-#### Step 1: Start Keycloak
-```bash
-docker compose up -d keycloak
-```
-#### Step 2: Configure Keycloak Realm
-1. Access Keycloak Admin Console at http://localhost:8180/admin/master/console/#/master/realms
-2. Login with credentials:
-    - **Username:** `admin`
-    - **Password:** `admin123` (from `.env` file)
-3. Run the setup script to create the realm and client (run from the project root directory):
-   ```bash
-   powershell -ExecutionPolicy Bypass -File .scripts\setup-keycloak.ps1
-   ```
-4. Refresh the admin console http://localhost:8180/admin/master/console/#/master/realms - you will now see `userapi-realm` listed
-5. **Activate the realm:**
-    - On the main page you would see "Manage Realms"
-    - Click on hyperlink `userapi-realm` to activate it (it changes from blue to grey)
-6. **Verify the client:**
-    - Navigate to http://localhost:8180/admin/master/console/#/userapi-realm/clients
-    - Confirm `userapi-client` is displayed (At the bottom of the list)
-    - After double click on `userapi-client` you will see the client details
-    - In the tab "Credentials" you will see the client secret, no manual action needed
-7. The setup script `setup-keycloak.ps1` automatically saves the `client secret` to `.env` as `KEYCLOAK_CLIENT_SECRET`, so the value from keycloak is not needed to manually copy to .env
-
-#### Step 3: Start the database and Application
-Now start PostgreSQL and the application in one command:
-```bash
-docker compose up -d postgres userapi
-```
-
-The application will now start successfully since Keycloak is configured and running.
-You can test the application by accessing  postman collection: http://localhost:8180/realms/userapi-realm/protocol/openid-connect/token
-then http://localhost:8080/users
-
-
-### 2. Run Locally - After first time setup
-
-Choose one of the following options:
-
-**Option A: Via Docker Compose (with all infrastructure):**
-Start up all the existing containers (Important keycloak MUST be running and active)
-```bash
-docker compose up --build
-```
-
-**Option B: Via Command Line (infrastructure must be running):** 
-Start Up container postgres
-```bash
-docker compose start postgres
-```
-Start Up container keycloak
-```bash
-docker compose start keycloak
-```
-
-Stop container userapi
-```bash
-docker compose stop userapi
-```
-
-mvn clean 
-```bash
-mvn clean install
-```
-Start the applicaion locally via command line or intellij
-
-```bash
-mvnw spring-boot:run
-```
-The application will now start successfully since Keycloak is configured and running.
-You can test the application by accessing  postman collection: http://localhost:8180/realms/userapi-realm/protocol/openid-connect/token
-then http://localhost:8080/users
-
-
-### 2. Run Tests
-Ensure all tests pass before building:
-```bash
-mvn test
-```
-
-### 3. Run Code Quality Analysis & Build
-
-You have two options to build your project:
-
-**Option A: Build with Maven clean verify**
-```bash
-mvn clean verify
-```
-This compiles, tests, and packages the application without code quality analysis.
-
-**Option B: Build and run code quality analysis with SonarQube**
-> **⚠️ Warning:** SonarQube Docker container must be running! Start it first if not already running:
-> ```bash
-> # First time only (or after docker compose down)
-> docker compose up -d sonarqube
-> ```
->
-> **Note:** The token must be generated in SonarQube and copied to `.env.local`
-
-Run the analysis script:
-```bash
-.scripts\sonar.bat
-```
-This runs `mvn clean verify` with additional SonarQube code quality analysis.
-
-
-## Services (Docker Compose)
-1. **PostgreSQL**
-    - Service name: `userapi_postgres`
-2. **Spring Boot application**
-    - Service name: `userapi_app`
-    - URL: `http://localhost:8080`
-3. **Adminer** (Database UI)
-    - Service name: `userapi_adminer`
-    - URL: `http://localhost:8081`
-4. **SonarQube** (Code quality)
-    - Service name: `userapi_sonarqube`
-    - URL: `http://localhost:9000`
-
-## Database connection
-
-**JDBC:**
-- URL: `jdbc:postgresql://localhost:5432/userdb`
-- Username: defined in `.env` (`POSTGRES_USER`)
-- Password: defined in `.env` (`POSTGRES_PASSWORD`)
-
-**Adminer UI:**
-- URL: `http://localhost:8081`
-
-You can inspect and manage the user table there for CRUD testing.
-
-## Logging & observability
-Spring Boot Actuator endpoints:
-- Actuator: `/actuator/*`
-- Health: `/actuator/health`
-- Metrics: `/actuator/metrics`
-
-**View container logs:**
-```bash
-docker logs -f userapi_app
-```
-
-## CI/CD
-Example pipeline stages:
-- build
-- test
-- package
-- docker_build
-- Artifacts:
-    - `.jar` in `target/`
-- The pipeline can be extended to publish container images to:
-    - GitLab Container Registry
-    - Docker Hub
-    - Nexus
-
-## AI Workflow
-This project includes an `.ai` folder that defines **AI-assisted development workflows.**
-
-When generating commit messages, you can instruct AI tools to follow:
-`.ai/skills/commit.md`
-
-Example commit messages:
-- `feat(model): add User entity with JPA annotations`
-- `feat(api): implement GET /users endpoint`
-
-## SonarQube Analysis
-
-Start SonarQube before running the analysis:
-```bash
-docker compose up -d sonarqube
-```
-
-Then run the analysis (Windows):
-```bash
-.scripts/sonar.bat
-```
-
-> **Note:** The script reads `SONAR_TOKEN` from `.env.local` and runs the analysis using the `localProfile` Maven profile.
-
-## Detailed Setup Instructions
-
-### 1. Start Infrastructure Services
-
-First, start all required services with Docker Compose:
-
-```bash
-docker compose up -d
-```
-
-### 2. Configure Keycloak
-Only KeyCloak container
-#### Step 1: Start Keycloak
+### 2.1 Start Keycloak
 ```bash
 docker compose up -d keycloak
 ```
 
-#### Step 2: Configure Keycloak Realm
+### 2.2 Configure Keycloak Realm
 1. Access Keycloak Admin Console at http://localhost:8180/admin/master/console/#/master/realms
 2. Login with credentials:
-    - **Username:** `admin`
-    - **Password:** `admin123` (from `.env` file)
-3. Run the setup script to create the realm and client:
+   - **Username:** `admin`
+   - **Password:** `admin123` (from `.env` file)
+3. Run the setup script to create the realm and client (from project root):
    ```bash
    powershell -ExecutionPolicy Bypass -File .scripts\setup-keycloak.ps1
    ```
 4. Refresh the admin console - you will now see `userapi-realm` listed
 5. **Activate the realm:**
-    - Click on "Manage Realms" in the top-left
-    - Click on `userapi-realm` to activate it (it changes from blue to grey)
+   - Click on "Manage Realms" in the top-left
+   - Click on `userapi-realm` to activate it (it changes from blue to grey)
 6. **Verify the client:**
-    - Navigate to http://localhost:8180/admin/master/console/#/userapi-realm/clients
-    - Confirm `userapi-client` is displayed
+   - Navigate to http://localhost:8180/admin/master/console/#/userapi-realm/clients
+   - Confirm `userapi-client` is displayed
 7. The setup script automatically saves the client secret to `.env` as `KEYCLOAK_CLIENT_SECRET`
 
-#### Step 3: Start the Application
-Now start PostgreSQL and the application:
+## Step 3: Start the Application
+Start PostgreSQL and the application:
 ```bash
 docker compose up -d postgres userapi
 ```
 
-The application will now start successfully since Keycloak is configured and running.
+The application will now start successfully. Access it at:
+- **Application:** http://localhost:8080
+- **Adminer (Database UI):** http://localhost:8081
+- **SonarQube (Code Quality):** http://localhost:9000
 
+## Step 4: Test the Application
+Use the Postman collection to test endpoints:
+1. Get access token: http://localhost:8180/realms/userapi-realm/protocol/openid-connect/token
+2. Access protected endpoints: http://localhost:8080/users
 
-### 3. Configure SonarQube
+---
 
-Access SonarQube:
-```
-http://localhost:9000/sessions/new?return_to=%2F
-```
+# Development Workflow
 
-**Initial setup:**
-1. Update the default password
-2. Generate a token:
-    - Go to http://localhost:9000/account/security
-    - Add:
-        - **Name:** user-api-maven
-        - **Type:** User token
-        - **Expires:** No expiration
-3. Copy the token to your `.env` and `.env.local` files
+## Running the Application
 
-### 4. Configure Database
-
-Access Adminer:
-```
-http://localhost:8081/?pgsql=postgres&username=user&db=userdb&ns=public&select=users
-```
-
-**Credentials:** Check `.env.local` for `POSTGRES_USER` and `POSTGRES_PASSWORD`
-
-**Create database:**
-- Create a new database named `userdb`
-
-### 5. Running the Application
-
-**Option 1: Via Docker**
-The application is already running when you start Docker Compose (if `userapi_app` service is enabled).
-
-**Option 2: Via Command Line or IntelliJ**
-
-First, stop the application container in Docker:
+### Option A: Via Docker Compose (Recommended)
+Start all services (Keycloak must already be configured):
 ```bash
-docker compose stop userapi_app
+docker compose up --build
 ```
 
-Then run:
-
-**Development profile:**
+Stop all services:
 ```bash
-mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+docker compose down
 ```
 
-**Production profile:**
+### Option B: Via Command Line or IntelliJ
+Start infrastructure services:
 ```bash
-mvnw spring-boot:run -Dspring-boot.run.profiles=prod
+docker compose start postgres keycloak
 ```
 
-**Default:**
+Stop the application container if running:
 ```bash
+docker compose stop userapi
+```
+
+Build and run locally:
+```bash
+mvn clean install
 mvnw spring-boot:run
 ```
 
-### 6. SonarQube Analysis
+## Running Tests
+Tests use H2 in-memory database and don't require Keycloak:
+```bash
+mvn test
+```
 
-Run SonarQube analysis (requires SonarQube Docker to be running):
+## Code Quality Analysis with SonarQube
+
+### First-Time SonarQube Setup
+1. Start SonarQube:
+   ```bash
+   docker compose up -d sonarqube
+   ```
+2. Access SonarQube at http://localhost:9000
+3. Update the default password
+4. Generate a token:
+   - Go to http://localhost:9000/account/security
+   - Add:
+     - **Name:** user-api-maven
+     - **Type:** User token
+     - **Expires:** No expiration
+5. Copy the token to your `.env` and `.env.local` files
+
+### Run Analysis
 ```bash
 .scripts\sonar.bat
 ```
 
-> **Note:** The script reads `SONAR_TOKEN` from `.env.local` and runs the analysis using the `localProfile` Maven profile.
+---
+
+# Services Reference
+
+## Docker Compose Services
+- **PostgreSQL** - Service name: `userapi_postgres`
+- **Spring Boot App** - Service name: `userapi_app`, URL: `http://localhost:8080`
+- **Adminer** (Database UI) - Service name: `userapi_adminer`, URL: `http://localhost:8081`
+- **SonarQube** (Code Quality) - Service name: `userapi_sonarqube`, URL: `http://localhost:9000`
+- **Keycloak** (Authentication) - Service name: `userapi_keycloak`, URL: `http://localhost:8180`
+
+## Database Connection
+**JDBC:**
+- URL: `jdbc:postgresql://localhost:5432/userdb`
+- Username: defined in `.env` (`POSTGRES_USER`)
+- Password: defined in `.env` (`POSTGRES_PASSWORD`)
+
+**Adminer UI:** http://localhost:8081
+
+## Logging & Observability
+Spring Boot Actuator endpoints:
+- Health: `/actuator/health`
+- Metrics: `/actuator/metrics`
+
+View container logs:
+```bash
+docker logs -f userapi_app
+```
 
 ---
 
-### 7. Postman
-Open postman collection user-api (JWT/OAuth)
-It has 4 directories:
-1. Auth
-2. User Endpoints
-3. Error Handling
-4. Actuator endpoints
-http://localhost:8080/actuator/health
-5. test_pagination
+# Postman Collection
 
-- Test with postman:
-  - In the main directory "user-api (JWT/OAuth2)" are store the variables,there is one "accesToken" which is empty
-  - Get Access Token (Password Grant)
-     http://localhost:8180/realms/userapi-realm/protocol/openid-connect/token
-  - This would generate the token, the script is postman is ready to copy the token to all endpoint in Headers -->Authoriazion {{accessToken}}
-  - Finally you can test http://localhost:8080/users auth
+The Postman collection `user-api (JWT/OAuth2)` includes:
+1. **Auth** - Get access tokens
+2. **User Endpoints** - CRUD operations
+3. **Error Handling** - Test error scenarios
+4. **Actuator Endpoints** - Health and metrics
+5. **Test Pagination** - Pagination testing
 
-- **They use the same URL but different OAuth2 grant types:**
-http://localhost:8180/realms/userapi-realm/protocol/openid-connect/token
-  - Password Grant:
-    - Uses grant_type=password 
-    - Requires: username, password, client_id, client_secret 
-    - Authenticates as a user
-  - Client Credentials:
-    - Uses grant_type=client_credentials 
-    - Requires: client_id, client_secret 
-    - Authenticates as the application/client (no user context)
-- Both hit the same Keycloak token endpoint, but the request body parameters differ based on which grant type you're using.
+### OAuth2 Grant Types
+Both grant types use the same token endpoint: http://localhost:8180/realms/userapi-realm/protocol/openid-connect/token
 
-## Notes and tips
-- Keep **secrets out of Git**: use `.env` or your CI secret store.
-- Use the **test profile with H2** for unit and integration tests.
-- If ports conflict, update the bindings in `docker-compose.yml`.
-- The **Docker + PostgreSQL + Adminer + Actuator** setup makes the project resemble a real enterprise microservice environment.
+- **Password Grant:** Uses `grant_type=password`, requires username, password, client_id, client_secret. Authenticates as a user.
+- **Client Credentials:** Uses `grant_type=client_credentials`, requires client_id, client_secret. Authenticates as the application/client (no user context).
+
+---
+
+# CI/CD
+Example pipeline stages:
+- build
+- test
+- package
+- docker_build
+- Artifacts: `.jar` in `target/`
+- Can be extended to publish to GitLab Container Registry, Docker Hub, or Nexus
+
+---
+
+# AI Workflow
+This project includes an `.ai` folder that defines AI-assisted development workflows.
+
+When generating commit messages, follow `.ai/skills/commit.md`:
+- `feat(model): add User entity with JPA annotations`
+- `feat(api): implement GET /users endpoint`
+
+---
+
+# Notes and Tips
+- Keep **secrets out of Git**: use `.env` or your CI secret store
+- Use the **test profile with H2** for unit and integration tests
+- If ports conflict, update the bindings in `docker-compose.yml`
+- The **Docker + PostgreSQL + Keycloak + Adminer + Actuator** setup resembles a real enterprise microservice environment
 
