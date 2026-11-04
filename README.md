@@ -180,7 +180,31 @@ mvn test
 - Username: defined in `.env` (`POSTGRES_USER`)
 - Password: defined in `.env` (`POSTGRES_PASSWORD`)
 
-**Adminer UI:** http://localhost:8081
+**Adminer UI:** 
+1. Start PostgreSQL (if not running): `docker compose up -d postgres`
+2. Start Adminer: `docker compose up -d adminer` or `docker compose start adminer`
+3. Open http://localhost:8081
+4. Enter the following connection details:
+    - System: `PostgreSQL`
+    - Server: `postgres`    
+    - Username: defined in `.env` (`POSTGRES_USER`)
+    - Password: defined in `.env` (`POSTGRES_PASSWORD`)
+    - Database: `userdb` (or `POSTGRES_DB` from `.env`)
+5. Click "Login" after entering the details
+
+
+**DBeaver:**
+1. Start PostgreSQL: `docker compose up -d postgres` or `docker compose start postgres`
+2. Open DBeaver and go to Database → New Database Connection
+3. Select PostgreSQL
+4. Enter the following connection details:
+   - Host: `localhost`
+   - Port: `5432` (or `POSTGRES_PORT` from `.env`) 
+   - Database: `userdb` (or `POSTGRES_DB` from `.env`)
+   - Username: defined in `.env` (`POSTGRES_USER`)
+   - Password: defined in `.env` (`POSTGRES_PASSWORD`)
+5. Click "Test Connection"
+6. Click "Finish" to save the connection
 
 ## Logging & Observability
 Spring Boot Actuator endpoints:
